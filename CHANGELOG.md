@@ -1,22 +1,166 @@
-# Changelog
+# Changes
 
-All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## 2.0.2
 
-## v1.0.0 - 2022-01-02
+* Rename bin to `node-which`
 
-### Commits
+## 2.0.1
 
-- Tests [`e2f59ad`](https://github.com/inspect-js/node-supports-preserve-symlinks-flag/commit/e2f59ad74e2ae0f5f4899fcde6a6f693ab7cc074)
-- Initial commit [`dc222aa`](https://github.com/inspect-js/node-supports-preserve-symlinks-flag/commit/dc222aad3c0b940d8d3af1ca9937d108bd2dc4b9)
-- [meta] do not publish workflow files [`5ef77f7`](https://github.com/inspect-js/node-supports-preserve-symlinks-flag/commit/5ef77f7cb6946d16ee38672be9ec0f1bbdf63262)
-- npm init [`992b068`](https://github.com/inspect-js/node-supports-preserve-symlinks-flag/commit/992b068503a461f7e8676f40ca2aab255fd8d6ff)
-- read me [`6c9afa9`](https://github.com/inspect-js/node-supports-preserve-symlinks-flag/commit/6c9afa9fabc8eaf0814aaed6dd01e6df0931b76d)
-- Initial implementation [`2f98925`](https://github.com/inspect-js/node-supports-preserve-symlinks-flag/commit/2f9892546396d4ab0ad9f1ff83e76c3f01234ae8)
-- [meta] add `auto-changelog` [`6c476ae`](https://github.com/inspect-js/node-supports-preserve-symlinks-flag/commit/6c476ae1ed7ce68b0480344f090ac2844f35509d)
-- [Dev Deps] add `eslint`, `@ljharb/eslint-config` [`d0fffc8`](https://github.com/inspect-js/node-supports-preserve-symlinks-flag/commit/d0fffc886d25fba119355520750a909d64da0087)
-- Only apps should have lockfiles [`ab318ed`](https://github.com/inspect-js/node-supports-preserve-symlinks-flag/commit/ab318ed7ae62f6c2c0e80a50398d40912afd8f69)
-- [meta] add `safe-publish-latest` [`2bb23b3`](https://github.com/inspect-js/node-supports-preserve-symlinks-flag/commit/2bb23b3ebab02dc4135c4cdf0217db82835b9fca)
-- [meta] add `sideEffects` flag [`600223b`](https://github.com/inspect-js/node-supports-preserve-symlinks-flag/commit/600223ba24f30779f209d9097721eff35ed62741)
+* generate changelog and publish on version bump
+* enforce 100% test coverage
+* Promise interface
+
+## 2.0.0
+
+* Parallel tests, modern JavaScript, and drop support for node < 8
+
+## 1.3.1
+
+* update deps
+* update travis
+
+## v1.3.0
+
+* Add nothrow option to which.sync
+* update tap
+
+## v1.2.14
+
+* appveyor: drop node 5 and 0.x
+* travis-ci: add node 6, drop 0.x
+
+## v1.2.13
+
+* test: Pass missing option to pass on windows
+* update tap
+* update isexe to 2.0.0
+* neveragain.tech pledge request
+
+## v1.2.12
+
+* Removed unused require
+
+## v1.2.11
+
+* Prevent changelog script from being included in package
+
+## v1.2.10
+
+* Use env.PATH only, not env.Path
+
+## v1.2.9
+
+* fix for paths starting with ../
+* Remove unused `is-absolute` module
+
+## v1.2.8
+
+* bullet items in changelog that contain (but don't start with) #
+
+## v1.2.7
+
+* strip 'update changelog' changelog entries out of changelog
+
+## v1.2.6
+
+* make the changelog bulleted
+
+## v1.2.5
+
+* make a changelog, and keep it up to date
+* don't include tests in package
+* Properly handle relative-path executables
+* appveyor
+* Attach error code to Not Found error
+* Make tests pass on Windows
+
+## v1.2.4
+
+* Fix typo
+
+## v1.2.3
+
+* update isexe, fix regression in pathExt handling
+
+## v1.2.2
+
+* update deps, use isexe module, test windows
+
+## v1.2.1
+
+* Sometimes windows PATH entries are quoted
+* Fixed a bug in the check for group and user mode bits. This bug was introduced during refactoring for supporting strict mode.
+* doc cli
+
+## v1.2.0
+
+* Add support for opt.all and -as cli flags
+* test the bin
+* update travis
+* Allow checking for multiple programs in bin/which
+* tap 2
+
+## v1.1.2
+
+* travis
+* Refactored and fixed undefined error on Windows
+* Support strict mode
+
+## v1.1.1
+
+* test +g exes against secondary groups, if available
+* Use windows exe semantics on cygwin & msys
+* cwd should be first in path on win32, not last
+* Handle lower-case 'env.Path' on Windows
+* Update docs
+* use single-quotes
+
+## v1.1.0
+
+* Add tests, depend on is-absolute
+
+## v1.0.9
+
+* which.js: root is allowed to execute files owned by anyone
+
+## v1.0.8
+
+* don't use graceful-fs
+
+## v1.0.7
+
+* add license to package.json
+
+## v1.0.6
+
+* isc license
+
+## 1.0.5
+
+* Awful typo
+
+## 1.0.4
+
+* Test for path absoluteness properly
+* win: Allow '' as a pathext if cmd has a . in it
+
+## 1.0.3
+
+* Remove references to execPath
+* Make `which.sync()` work on Windows by honoring the PATHEXT variable.
+* Make `isExe()` always return true on Windows.
+* MIT
+
+## 1.0.2
+
+* Only files can be exes
+
+## 1.0.1
+
+* Respect the PATHEXT env for win32 support
+* should 0755 the bin
+* binary
+* guts
+* package
+* 1st

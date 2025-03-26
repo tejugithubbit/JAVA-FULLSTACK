@@ -1,261 +1,216 @@
-export { parseAst, parseAstAsync } from 'rollup/parseAst';
-import { i as isInNodeModules, a as arraify } from './chunks/dep-CHZK6zbr.js';
-export { b as build, g as buildErrorMessage, k as createFilter, v as createLogger, c as createServer, d as defineConfig, h as fetchModule, f as formatPostcssSourceMap, x as isFileServingAllowed, l as loadConfigFromFile, y as loadEnv, j as mergeAlias, m as mergeConfig, n as normalizePath, o as optimizeDeps, e as preprocessCSS, p as preview, r as resolveConfig, z as resolveEnvPrefix, q as rollupVersion, w as searchForWorkspaceRoot, u as send, s as sortUserPlugins, t as transformWithEsbuild } from './chunks/dep-CHZK6zbr.js';
-export { VERSION as version } from './constants.js';
-export { version as esbuildVersion } from 'esbuild';
-import { existsSync, readFileSync } from 'node:fs';
-import { ViteRuntime, ESModulesRunner } from 'vite/runtime';
-import 'node:fs/promises';
-import 'node:path';
-import 'node:url';
-import 'node:util';
-import 'node:perf_hooks';
-import 'node:module';
-import 'node:crypto';
-import 'tty';
-import 'path';
-import 'fs';
-import 'node:events';
-import 'node:stream';
-import 'node:string_decoder';
-import 'node:child_process';
-import 'node:http';
-import 'node:https';
-import 'util';
-import 'net';
-import 'events';
-import 'url';
-import 'http';
-import 'stream';
-import 'os';
-import 'child_process';
-import 'node:os';
-import 'node:dns';
-import 'crypto';
-import 'module';
-import 'node:assert';
-import 'node:v8';
-import 'node:worker_threads';
-import 'node:buffer';
-import 'querystring';
-import 'node:readline';
-import 'zlib';
-import 'buffer';
-import 'https';
-import 'tls';
-import 'node:net';
-import 'assert';
-import 'node:zlib';
+'use strict';
+const stringWidth = require('string-width');
+const stripAnsi = require('strip-ansi');
+const ansiStyles = require('ansi-styles');
 
-const CSS_LANGS_RE = (
-  // eslint-disable-next-line regexp/no-unused-capturing-group
-  /\.(css|less|sass|scss|styl|stylus|pcss|postcss|sss)(?:$|\?)/
-);
-const isCSSRequest = (request) => CSS_LANGS_RE.test(request);
-class SplitVendorChunkCache {
-  cache;
-  constructor() {
-    this.cache = /* @__PURE__ */ new Map();
-  }
-  reset() {
-    this.cache = /* @__PURE__ */ new Map();
-  }
-}
-function splitVendorChunk(options = {}) {
-  const cache = options.cache ?? new SplitVendorChunkCache();
-  return (id, { getModuleInfo }) => {
-    if (isInNodeModules(id) && !isCSSRequest(id) && staticImportedByEntry(id, getModuleInfo, cache.cache)) {
-      return "vendor";
-    }
-  };
-}
-function staticImportedByEntry(id, getModuleInfo, cache, importStack = []) {
-  if (cache.has(id)) {
-    return cache.get(id);
-  }
-  if (importStack.includes(id)) {
-    cache.set(id, false);
-    return false;
-  }
-  const mod = getModuleInfo(id);
-  if (!mod) {
-    cache.set(id, false);
-    return false;
-  }
-  if (mod.isEntry) {
-    cache.set(id, true);
-    return true;
-  }
-  const someImporterIs = mod.importers.some(
-    (importer) => staticImportedByEntry(
-      importer,
-      getModuleInfo,
-      cache,
-      importStack.concat(id)
-    )
-  );
-  cache.set(id, someImporterIs);
-  return someImporterIs;
-}
-function splitVendorChunkPlugin() {
-  const caches = [];
-  function createSplitVendorChunk(output, config) {
-    const cache = new SplitVendorChunkCache();
-    caches.push(cache);
-    const build = config.build ?? {};
-    const format = output?.format;
-    if (!build.ssr && !build.lib && format !== "umd" && format !== "iife") {
-      return splitVendorChunk({ cache });
-    }
-  }
-  return {
-    name: "vite:split-vendor-chunk",
-    config(config) {
-      let outputs = config?.build?.rollupOptions?.output;
-      if (outputs) {
-        outputs = arraify(outputs);
-        for (const output of outputs) {
-          const viteManualChunks = createSplitVendorChunk(output, config);
-          if (viteManualChunks) {
-            if (output.manualChunks) {
-              if (typeof output.manualChunks === "function") {
-                const userManualChunks = output.manualChunks;
-                output.manualChunks = (id, api) => {
-                  return userManualChunks(id, api) ?? viteManualChunks(id, api);
-                };
-              } else {
-                console.warn(
-                  "(!) the `splitVendorChunk` plugin doesn't have any effect when using the object form of `build.rollupOptions.output.manualChunks`. Consider using the function form instead."
-                );
-              }
-            } else {
-              output.manualChunks = viteManualChunks;
-            }
-          }
-        }
-      } else {
-        return {
-          build: {
-            rollupOptions: {
-              output: {
-                manualChunks: createSplitVendorChunk({}, config)
-              }
-            }
-          }
-        };
-      }
-    },
-    buildStart() {
-      caches.forEach((cache) => cache.reset());
-    }
-  };
-}
+const ESCAPES = new Set([
+	'\u001B',
+	'\u009B'
+]);
 
-class ServerHMRBroadcasterClient {
-  constructor(hmrChannel) {
-    this.hmrChannel = hmrChannel;
-  }
-  send(...args) {
-    let payload;
-    if (typeof args[0] === "string") {
-      payload = {
-        type: "custom",
-        event: args[0],
-        data: args[1]
-      };
-    } else {
-      payload = args[0];
-    }
-    if (payload.type !== "custom") {
-      throw new Error(
-        "Cannot send non-custom events from the client to the server."
-      );
-    }
-    this.hmrChannel.send(payload);
-  }
-}
-class ServerHMRConnector {
-  handlers = [];
-  hmrChannel;
-  hmrClient;
-  connected = false;
-  constructor(server) {
-    const hmrChannel = server.hot?.channels.find(
-      (c) => c.name === "ssr"
-    );
-    if (!hmrChannel) {
-      throw new Error(
-        "Your version of Vite doesn't support HMR during SSR. Please, use Vite 5.1 or higher."
-      );
-    }
-    this.hmrClient = new ServerHMRBroadcasterClient(hmrChannel);
-    hmrChannel.api.outsideEmitter.on("send", (payload) => {
-      this.handlers.forEach((listener) => listener(payload));
-    });
-    this.hmrChannel = hmrChannel;
-  }
-  isReady() {
-    return this.connected;
-  }
-  send(message) {
-    const payload = JSON.parse(message);
-    this.hmrChannel.api.innerEmitter.emit(
-      payload.event,
-      payload.data,
-      this.hmrClient
-    );
-  }
-  onUpdate(handler) {
-    this.handlers.push(handler);
-    handler({ type: "connected" });
-    this.connected = true;
-  }
-}
+const END_CODE = 39;
 
-function createHMROptions(server, options) {
-  if (server.config.server.hmr === false || options.hmr === false) {
-    return false;
-  }
-  const connection = new ServerHMRConnector(server);
-  return {
-    connection,
-    logger: options.hmr?.logger
-  };
-}
-const prepareStackTrace = {
-  retrieveFile(id) {
-    if (existsSync(id)) {
-      return readFileSync(id, "utf-8");
-    }
-  }
+const ANSI_ESCAPE_BELL = '\u0007';
+const ANSI_CSI = '[';
+const ANSI_OSC = ']';
+const ANSI_SGR_TERMINATOR = 'm';
+const ANSI_ESCAPE_LINK = `${ANSI_OSC}8;;`;
+
+const wrapAnsi = code => `${ESCAPES.values().next().value}${ANSI_CSI}${code}${ANSI_SGR_TERMINATOR}`;
+const wrapAnsiHyperlink = uri => `${ESCAPES.values().next().value}${ANSI_ESCAPE_LINK}${uri}${ANSI_ESCAPE_BELL}`;
+
+// Calculate the length of words split on ' ', ignoring
+// the extra characters added by ansi escape codes
+const wordLengths = string => string.split(' ').map(character => stringWidth(character));
+
+// Wrap a long word across multiple rows
+// Ansi escape codes do not count towards length
+const wrapWord = (rows, word, columns) => {
+	const characters = [...word];
+
+	let isInsideEscape = false;
+	let isInsideLinkEscape = false;
+	let visible = stringWidth(stripAnsi(rows[rows.length - 1]));
+
+	for (const [index, character] of characters.entries()) {
+		const characterLength = stringWidth(character);
+
+		if (visible + characterLength <= columns) {
+			rows[rows.length - 1] += character;
+		} else {
+			rows.push(character);
+			visible = 0;
+		}
+
+		if (ESCAPES.has(character)) {
+			isInsideEscape = true;
+			isInsideLinkEscape = characters.slice(index + 1).join('').startsWith(ANSI_ESCAPE_LINK);
+		}
+
+		if (isInsideEscape) {
+			if (isInsideLinkEscape) {
+				if (character === ANSI_ESCAPE_BELL) {
+					isInsideEscape = false;
+					isInsideLinkEscape = false;
+				}
+			} else if (character === ANSI_SGR_TERMINATOR) {
+				isInsideEscape = false;
+			}
+
+			continue;
+		}
+
+		visible += characterLength;
+
+		if (visible === columns && index < characters.length - 1) {
+			rows.push('');
+			visible = 0;
+		}
+	}
+
+	// It's possible that the last row we copy over is only
+	// ansi escape characters, handle this edge-case
+	if (!visible && rows[rows.length - 1].length > 0 && rows.length > 1) {
+		rows[rows.length - 2] += rows.pop();
+	}
 };
-function resolveSourceMapOptions(options) {
-  if (options.sourcemapInterceptor != null) {
-    if (options.sourcemapInterceptor === "prepareStackTrace") {
-      return prepareStackTrace;
-    }
-    if (typeof options.sourcemapInterceptor === "object") {
-      return { ...prepareStackTrace, ...options.sourcemapInterceptor };
-    }
-    return options.sourcemapInterceptor;
-  }
-  if (typeof process !== "undefined" && "setSourceMapsEnabled" in process) {
-    return "node";
-  }
-  return prepareStackTrace;
-}
-async function createViteRuntime(server, options = {}) {
-  const hmr = createHMROptions(server, options);
-  return new ViteRuntime(
-    {
-      ...options,
-      root: server.config.root,
-      fetchModule: server.ssrFetchModule,
-      hmr,
-      sourcemapInterceptor: resolveSourceMapOptions(options)
-    },
-    options.runner || new ESModulesRunner()
-  );
-}
 
-export { ServerHMRConnector, createViteRuntime, isCSSRequest, splitVendorChunk, splitVendorChunkPlugin };
+// Trims spaces from a string ignoring invisible sequences
+const stringVisibleTrimSpacesRight = string => {
+	const words = string.split(' ');
+	let last = words.length;
+
+	while (last > 0) {
+		if (stringWidth(words[last - 1]) > 0) {
+			break;
+		}
+
+		last--;
+	}
+
+	if (last === words.length) {
+		return string;
+	}
+
+	return words.slice(0, last).join(' ') + words.slice(last).join('');
+};
+
+// The wrap-ansi module can be invoked in either 'hard' or 'soft' wrap mode
+//
+// 'hard' will never allow a string to take up more than columns characters
+//
+// 'soft' allows long words to expand past the column length
+const exec = (string, columns, options = {}) => {
+	if (options.trim !== false && string.trim() === '') {
+		return '';
+	}
+
+	let returnValue = '';
+	let escapeCode;
+	let escapeUrl;
+
+	const lengths = wordLengths(string);
+	let rows = [''];
+
+	for (const [index, word] of string.split(' ').entries()) {
+		if (options.trim !== false) {
+			rows[rows.length - 1] = rows[rows.length - 1].trimStart();
+		}
+
+		let rowLength = stringWidth(rows[rows.length - 1]);
+
+		if (index !== 0) {
+			if (rowLength >= columns && (options.wordWrap === false || options.trim === false)) {
+				// If we start with a new word but the current row length equals the length of the columns, add a new row
+				rows.push('');
+				rowLength = 0;
+			}
+
+			if (rowLength > 0 || options.trim === false) {
+				rows[rows.length - 1] += ' ';
+				rowLength++;
+			}
+		}
+
+		// In 'hard' wrap mode, the length of a line is never allowed to extend past 'columns'
+		if (options.hard && lengths[index] > columns) {
+			const remainingColumns = (columns - rowLength);
+			const breaksStartingThisLine = 1 + Math.floor((lengths[index] - remainingColumns - 1) / columns);
+			const breaksStartingNextLine = Math.floor((lengths[index] - 1) / columns);
+			if (breaksStartingNextLine < breaksStartingThisLine) {
+				rows.push('');
+			}
+
+			wrapWord(rows, word, columns);
+			continue;
+		}
+
+		if (rowLength + lengths[index] > columns && rowLength > 0 && lengths[index] > 0) {
+			if (options.wordWrap === false && rowLength < columns) {
+				wrapWord(rows, word, columns);
+				continue;
+			}
+
+			rows.push('');
+		}
+
+		if (rowLength + lengths[index] > columns && options.wordWrap === false) {
+			wrapWord(rows, word, columns);
+			continue;
+		}
+
+		rows[rows.length - 1] += word;
+	}
+
+	if (options.trim !== false) {
+		rows = rows.map(stringVisibleTrimSpacesRight);
+	}
+
+	const pre = [...rows.join('\n')];
+
+	for (const [index, character] of pre.entries()) {
+		returnValue += character;
+
+		if (ESCAPES.has(character)) {
+			const {groups} = new RegExp(`(?:\\${ANSI_CSI}(?<code>\\d+)m|\\${ANSI_ESCAPE_LINK}(?<uri>.*)${ANSI_ESCAPE_BELL})`).exec(pre.slice(index).join('')) || {groups: {}};
+			if (groups.code !== undefined) {
+				const code = Number.parseFloat(groups.code);
+				escapeCode = code === END_CODE ? undefined : code;
+			} else if (groups.uri !== undefined) {
+				escapeUrl = groups.uri.length === 0 ? undefined : groups.uri;
+			}
+		}
+
+		const code = ansiStyles.codes.get(Number(escapeCode));
+
+		if (pre[index + 1] === '\n') {
+			if (escapeUrl) {
+				returnValue += wrapAnsiHyperlink('');
+			}
+
+			if (escapeCode && code) {
+				returnValue += wrapAnsi(code);
+			}
+		} else if (character === '\n') {
+			if (escapeCode && code) {
+				returnValue += wrapAnsi(escapeCode);
+			}
+
+			if (escapeUrl) {
+				returnValue += wrapAnsiHyperlink(escapeUrl);
+			}
+		}
+	}
+
+	return returnValue;
+};
+
+// For each newline, invoke the method separately
+module.exports = (string, columns, options) => {
+	return String(string)
+		.normalize()
+		.replace(/\r\n/g, '\n')
+		.split('\n')
+		.map(line => exec(line, columns, options))
+		.join('\n');
+};
