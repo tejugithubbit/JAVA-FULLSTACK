@@ -1,93 +1,106 @@
-import type { Dispatch, Middleware, UnknownAction } from 'redux'
-import { compose } from 'redux'
-import { createAction } from '../createAction'
-import { isAllOf } from '../matchers'
-import { nanoid } from '../nanoid'
-import { getOrInsertComputed } from '../utils'
-import type {
-  AddMiddleware,
-  DynamicMiddleware,
-  DynamicMiddlewareInstance,
-  MiddlewareEntry,
-  WithMiddleware,
-} from './types'
 export type {
-  DynamicMiddlewareInstance,
-  GetDispatchType as GetDispatch,
-  MiddlewareApiConfig,
-} from './types'
+  ActionFunction,
+  ActionFunctionArgs,
+  AgnosticDataIndexRouteObject,
+  AgnosticDataNonIndexRouteObject,
+  AgnosticDataRouteMatch,
+  AgnosticDataRouteObject,
+  AgnosticIndexRouteObject,
+  AgnosticNonIndexRouteObject,
+  AgnosticPatchRoutesOnNavigationFunction,
+  AgnosticPatchRoutesOnNavigationFunctionArgs,
+  AgnosticRouteMatch,
+  AgnosticRouteObject,
+  DataStrategyFunction,
+  DataStrategyFunctionArgs,
+  DataStrategyMatch,
+  DataStrategyResult,
+  ErrorResponse,
+  FormEncType,
+  FormMethod,
+  HTMLFormMethod,
+  JsonFunction,
+  LazyRouteFunction,
+  LoaderFunction,
+  LoaderFunctionArgs,
+  ParamParseKey,
+  Params,
+  PathMatch,
+  PathParam,
+  PathPattern,
+  RedirectFunction,
+  ShouldRevalidateFunction,
+  ShouldRevalidateFunctionArgs,
+  TrackedPromise,
+  UIMatch,
+  V7_FormMethod,
+  DataWithResponseInit as UNSAFE_DataWithResponseInit,
+} from "./utils";
 
-const createMiddlewareEntry = <
-  State = any,
-  DispatchType extends Dispatch<UnknownAction> = Dispatch<UnknownAction>,
->(
-  middleware: Middleware<any, State, DispatchType>,
-): MiddlewareEntry<State, DispatchType> => ({
-  middleware,
-  applied: new Map(),
-})
+export {
+  AbortedDeferredError,
+  data,
+  defer,
+  generatePath,
+  getToPathname,
+  isRouteErrorResponse,
+  joinPaths,
+  json,
+  matchPath,
+  matchRoutes,
+  normalizePathname,
+  redirect,
+  redirectDocument,
+  replace,
+  resolvePath,
+  resolveTo,
+  stripBasename,
+} from "./utils";
 
-const matchInstance =
-  (instanceId: string) =>
-  (action: any): action is { meta: { instanceId: string } } =>
-    action?.meta?.instanceId === instanceId
+export type {
+  BrowserHistory,
+  BrowserHistoryOptions,
+  HashHistory,
+  HashHistoryOptions,
+  History,
+  InitialEntry,
+  Location,
+  MemoryHistory,
+  MemoryHistoryOptions,
+  Path,
+  To,
+} from "./history";
 
-export const createDynamicMiddleware = <
-  State = any,
-  DispatchType extends Dispatch<UnknownAction> = Dispatch<UnknownAction>,
->(): DynamicMiddlewareInstance<State, DispatchType> => {
-  const instanceId = nanoid()
-  const middlewareMap = new Map<
-    Middleware<any, State, DispatchType>,
-    MiddlewareEntry<State, DispatchType>
-  >()
+export {
+  Action,
+  createBrowserHistory,
+  createHashHistory,
+  createMemoryHistory,
+  createPath,
+  parsePath,
+} from "./history";
 
-  const withMiddleware = Object.assign(
-    createAction(
-      'dynamicMiddleware/add',
-      (...middlewares: Middleware<any, State, DispatchType>[]) => ({
-        payload: middlewares,
-        meta: {
-          instanceId,
-        },
-      }),
-    ),
-    { withTypes: () => withMiddleware },
-  ) as WithMiddleware<State, DispatchType>
+export * from "./router";
 
-  const addMiddleware = Object.assign(
-    function addMiddleware(
-      ...middlewares: Middleware<any, State, DispatchType>[]
-    ) {
-      middlewares.forEach((middleware) => {
-        getOrInsertComputed(middlewareMap, middleware, createMiddlewareEntry)
-      })
-    },
-    { withTypes: () => addMiddleware },
-  ) as AddMiddleware<State, DispatchType>
+///////////////////////////////////////////////////////////////////////////////
+// DANGER! PLEASE READ ME!
+// We consider these exports an implementation detail and do not guarantee
+// against any breaking changes, regardless of the semver release. Use with
+// extreme caution and only if you understand the consequences. Godspeed.
+///////////////////////////////////////////////////////////////////////////////
 
-  const getFinalMiddleware: Middleware<{}, State, DispatchType> = (api) => {
-    const appliedMiddleware = Array.from(middlewareMap.values()).map((entry) =>
-      getOrInsertComputed(entry.applied, api, entry.middleware),
-    )
-    return compose(...appliedMiddleware)
-  }
+/** @internal */
+export type { RouteManifest as UNSAFE_RouteManifest } from "./utils";
+export {
+  DeferredData as UNSAFE_DeferredData,
+  ErrorResponseImpl as UNSAFE_ErrorResponseImpl,
+  convertRoutesToDataRoutes as UNSAFE_convertRoutesToDataRoutes,
+  convertRouteMatchToUiMatch as UNSAFE_convertRouteMatchToUiMatch,
+  decodePath as UNSAFE_decodePath,
+  getResolveToMatches as UNSAFE_getResolveToMatches,
+} from "./utils";
 
-  const isWithMiddleware = isAllOf(withMiddleware, matchInstance(instanceId))
-
-  const middleware: DynamicMiddleware<State, DispatchType> =
-    (api) => (next) => (action) => {
-      if (isWithMiddleware(action)) {
-        addMiddleware(...action.payload)
-        return api.dispatch
-      }
-      return getFinalMiddleware(api)(next)(action)
-    }
-
-  return {
-    middleware,
-    addMiddleware,
-    withMiddleware,
-    instanceId,
-  }
-}
+export {
+  invariant as UNSAFE_invariant,
+  warning as UNSAFE_warning,
+} from "./history";

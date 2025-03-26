@@ -1,413 +1,443 @@
-<!-- omit in toc -->
-# parseArgs
+semver(1) -- The semantic versioner for npm
+===========================================
 
-[![Coverage][coverage-image]][coverage-url]
+## Install
 
-Polyfill of `util.parseArgs()`
+```bash
+npm install semver
+````
 
-## `util.parseArgs([config])`
+## Usage
 
-<!-- YAML
-added: v18.3.0
-changes:
-  - version: REPLACEME
-    pr-url: https://github.com/nodejs/node/pull/43459
-    description: add support for returning detailed parse information
-                 using `tokens` in input `config` and returned properties.
--->
+As a node module:
 
-> Stability: 1 - Experimental
+```js
+const semver = require('semver')
 
-* `config` {Object} Used to provide arguments for parsing and to configure
-  the parser. `config` supports the following properties:
-  * `args` {string\[]} array of argument strings. **Default:** `process.argv`
-    with `execPath` and `filename` removed.
-  * `options` {Object} Used to describe arguments known to the parser.
-    Keys of `options` are the long names of options and values are an
-    {Object} accepting the following properties:
-    * `type` {string} Type of argument, which must be either `boolean` or `string`.
-    * `multiple` {boolean} Whether this option can be provided multiple
-      times. If `true`, all values will be collected in an array. If
-      `false`, values for the option are last-wins. **Default:** `false`.
-    * `short` {string} A single character alias for the option.
-    * `default` {string | boolean | string\[] | boolean\[]} The default option
-      value when it is not set by args. It must be of the same type as the
-      the `type` property. When `multiple` is `true`, it must be an array.
-  * `strict` {boolean} Should an error be thrown when unknown arguments
-    are encountered, or when arguments are passed that do not match the
-    `type` configured in `options`.
-    **Default:** `true`.
-  * `allowPositionals` {boolean} Whether this command accepts positional
-    arguments.
-    **Default:** `false` if `strict` is `true`, otherwise `true`.
-  * `tokens` {boolean} Return the parsed tokens. This is useful for extending
-    the built-in behavior, from adding additional checks through to reprocessing
-    the tokens in different ways.
-    **Default:** `false`.
-
-* Returns: {Object} The parsed command line arguments:
-  * `values` {Object} A mapping of parsed option names with their {string}
-    or {boolean} values.
-  * `positionals` {string\[]} Positional arguments.
-  * `tokens` {Object\[] | undefined} See [parseArgs tokens](#parseargs-tokens)
-    section. Only returned if `config` includes `tokens: true`.
-
-Provides a higher level API for command-line argument parsing than interacting
-with `process.argv` directly. Takes a specification for the expected arguments
-and returns a structured object with the parsed options and positionals.
-
-```mjs
-import { parseArgs } from 'node:util';
-const args = ['-f', '--bar', 'b'];
-const options = {
-  foo: {
-    type: 'boolean',
-    short: 'f'
-  },
-  bar: {
-    type: 'string'
-  }
-};
-const {
-  values,
-  positionals
-} = parseArgs({ args, options });
-console.log(values, positionals);
-// Prints: [Object: null prototype] { foo: true, bar: 'b' } []
+semver.valid('1.2.3') // '1.2.3'
+semver.valid('a.b.c') // null
+semver.clean('  =v1.2.3   ') // '1.2.3'
+semver.satisfies('1.2.3', '1.x || >=2.5.0 || 5.0.0 - 7.2.3') // true
+semver.gt('1.2.3', '9.8.7') // false
+semver.lt('1.2.3', '9.8.7') // true
+semver.minVersion('>=1.0.0') // '1.0.0'
+semver.valid(semver.coerce('v2')) // '2.0.0'
+semver.valid(semver.coerce('42.6.7.9.3-alpha')) // '42.6.7'
 ```
 
-```cjs
-const { parseArgs } = require('node:util');
-const args = ['-f', '--bar', 'b'];
-const options = {
-  foo: {
-    type: 'boolean',
-    short: 'f'
-  },
-  bar: {
-    type: 'string'
-  }
-};
-const {
-  values,
-  positionals
-} = parseArgs({ args, options });
-console.log(values, positionals);
-// Prints: [Object: null prototype] { foo: true, bar: 'b' } []
+As a command-line utility:
+
+```
+$ semver -h
+
+A JavaScript implementation of the https://semver.org/ specification
+Copyright Isaac Z. Schlueter
+
+Usage: semver [options] <version> [<version> [...]]
+Prints valid versions sorted by SemVer precedence
+
+Options:
+-r --range <range>
+        Print versions that match the specified range.
+
+-i --increment [<level>]
+        Increment a version by the specified level.  Level can
+        be one of: major, minor, patch, premajor, preminor,
+        prepatch, or prerelease.  Default level is 'patch'.
+        Only one version may be specified.
+
+--preid <identifier>
+        Identifier to be used to prefix premajor, preminor,
+        prepatch or prerelease version increments.
+
+-l --loose
+        Interpret versions and ranges loosely
+
+-p --include-prerelease
+        Always include prerelease versions in range matching
+
+-c --coerce
+        Coerce a string into SemVer if possible
+        (does not imply --loose)
+
+--rtl
+        Coerce version strings right to left
+
+--ltr
+        Coerce version strings left to right (default)
+
+Program exits successfully if any valid version satisfies
+all supplied ranges, and prints all satisfying versions.
+
+If no satisfying versions are found, then exits failure.
+
+Versions are printed in ascending order, so supplying
+multiple versions to the utility will just sort them.
 ```
 
-`util.parseArgs` is experimental and behavior may change. Join the
-conversation in [pkgjs/parseargs][] to contribute to the design.
+## Versions
 
-### `parseArgs` `tokens`
+A "version" is described by the `v2.0.0` specification found at
+<https://semver.org/>.
 
-Detailed parse information is available for adding custom behaviours by
-specifying `tokens: true` in the configuration.
-The returned tokens have properties describing:
+A leading `"="` or `"v"` character is stripped off and ignored.
 
-* all tokens
-  * `kind` {string} One of 'option', 'positional', or 'option-terminator'.
-  * `index` {number} Index of element in `args` containing token. So the
-    source argument for a token is `args[token.index]`.
-* option tokens
-  * `name` {string} Long name of option.
-  * `rawName` {string} How option used in args, like `-f` of `--foo`.
-  * `value` {string | undefined} Option value specified in args.
-    Undefined for boolean options.
-  * `inlineValue` {boolean | undefined} Whether option value specified inline,
-    like `--foo=bar`.
-* positional tokens
-  * `value` {string} The value of the positional argument in args (i.e. `args[index]`).
-* option-terminator token
+## Ranges
 
-The returned tokens are in the order encountered in the input args. Options
-that appear more than once in args produce a token for each use. Short option
-groups like `-xy` expand to a token for each option. So `-xxx` produces
-three tokens.
+A `version range` is a set of `comparators` which specify versions
+that satisfy the range.
 
-For example to use the returned tokens to add support for a negated option
-like `--no-color`, the tokens can be reprocessed to change the value stored
-for the negated option.
+A `comparator` is composed of an `operator` and a `version`.  The set
+of primitive `operators` is:
 
-```mjs
-import { parseArgs } from 'node:util';
+* `<` Less than
+* `<=` Less than or equal to
+* `>` Greater than
+* `>=` Greater than or equal to
+* `=` Equal.  If no operator is specified, then equality is assumed,
+  so this operator is optional, but MAY be included.
 
-const options = {
-  'color': { type: 'boolean' },
-  'no-color': { type: 'boolean' },
-  'logfile': { type: 'string' },
-  'no-logfile': { type: 'boolean' },
-};
-const { values, tokens } = parseArgs({ options, tokens: true });
+For example, the comparator `>=1.2.7` would match the versions
+`1.2.7`, `1.2.8`, `2.5.3`, and `1.3.9`, but not the versions `1.2.6`
+or `1.1.0`.
 
-// Reprocess the option tokens and overwrite the returned values.
-tokens
-  .filter((token) => token.kind === 'option')
-  .forEach((token) => {
-    if (token.name.startsWith('no-')) {
-      // Store foo:false for --no-foo
-      const positiveName = token.name.slice(3);
-      values[positiveName] = false;
-      delete values[token.name];
-    } else {
-      // Resave value so last one wins if both --foo and --no-foo.
-      values[token.name] = token.value ?? true;
-    }
-  });
+Comparators can be joined by whitespace to form a `comparator set`,
+which is satisfied by the **intersection** of all of the comparators
+it includes.
 
-const color = values.color;
-const logfile = values.logfile ?? 'default.log';
+A range is composed of one or more comparator sets, joined by `||`.  A
+version matches a range if and only if every comparator in at least
+one of the `||`-separated comparator sets is satisfied by the version.
 
-console.log({ logfile, color });
-```
+For example, the range `>=1.2.7 <1.3.0` would match the versions
+`1.2.7`, `1.2.8`, and `1.2.99`, but not the versions `1.2.6`, `1.3.0`,
+or `1.1.0`.
 
-```cjs
-const { parseArgs } = require('node:util');
+The range `1.2.7 || >=1.2.9 <2.0.0` would match the versions `1.2.7`,
+`1.2.9`, and `1.4.6`, but not the versions `1.2.8` or `2.0.0`.
 
-const options = {
-  'color': { type: 'boolean' },
-  'no-color': { type: 'boolean' },
-  'logfile': { type: 'string' },
-  'no-logfile': { type: 'boolean' },
-};
-const { values, tokens } = parseArgs({ options, tokens: true });
+### Prerelease Tags
 
-// Reprocess the option tokens and overwrite the returned values.
-tokens
-  .filter((token) => token.kind === 'option')
-  .forEach((token) => {
-    if (token.name.startsWith('no-')) {
-      // Store foo:false for --no-foo
-      const positiveName = token.name.slice(3);
-      values[positiveName] = false;
-      delete values[token.name];
-    } else {
-      // Resave value so last one wins if both --foo and --no-foo.
-      values[token.name] = token.value ?? true;
-    }
-  });
+If a version has a prerelease tag (for example, `1.2.3-alpha.3`) then
+it will only be allowed to satisfy comparator sets if at least one
+comparator with the same `[major, minor, patch]` tuple also has a
+prerelease tag.
 
-const color = values.color;
-const logfile = values.logfile ?? 'default.log';
+For example, the range `>1.2.3-alpha.3` would be allowed to match the
+version `1.2.3-alpha.7`, but it would *not* be satisfied by
+`3.4.5-alpha.9`, even though `3.4.5-alpha.9` is technically "greater
+than" `1.2.3-alpha.3` according to the SemVer sort rules.  The version
+range only accepts prerelease tags on the `1.2.3` version.  The
+version `3.4.5` *would* satisfy the range, because it does not have a
+prerelease flag, and `3.4.5` is greater than `1.2.3-alpha.7`.
 
-console.log({ logfile, color });
-```
+The purpose for this behavior is twofold.  First, prerelease versions
+frequently are updated very quickly, and contain many breaking changes
+that are (by the author's design) not yet fit for public consumption.
+Therefore, by default, they are excluded from range matching
+semantics.
 
-Example usage showing negated options, and when an option is used
-multiple ways then last one wins.
+Second, a user who has opted into using a prerelease version has
+clearly indicated the intent to use *that specific* set of
+alpha/beta/rc versions.  By including a prerelease tag in the range,
+the user is indicating that they are aware of the risk.  However, it
+is still not appropriate to assume that they have opted into taking a
+similar risk on the *next* set of prerelease versions.
 
-```console
-$ node negate.js
-{ logfile: 'default.log', color: undefined }
-$ node negate.js --no-logfile --no-color
-{ logfile: false, color: false }
-$ node negate.js --logfile=test.log --color
-{ logfile: 'test.log', color: true }
-$ node negate.js --no-logfile --logfile=test.log --color --no-color
-{ logfile: 'test.log', color: false }
-```
+Note that this behavior can be suppressed (treating all prerelease
+versions as if they were normal versions, for the purpose of range
+matching) by setting the `includePrerelease` flag on the options
+object to any
+[functions](https://github.com/npm/node-semver#functions) that do
+range matching.
 
------
+#### Prerelease Identifiers
 
-<!-- omit in toc -->
-## Table of Contents
-- [`util.parseArgs([config])`](#utilparseargsconfig)
-- [Scope](#scope)
-- [Version Matchups](#version-matchups)
-- [🚀 Getting Started](#-getting-started)
-- [🙌 Contributing](#-contributing)
-- [💡 `process.mainArgs` Proposal](#-processmainargs-proposal)
-  - [Implementation:](#implementation)
-- [📃 Examples](#-examples)
-- [F.A.Qs](#faqs)
-- [Links & Resources](#links--resources)
-
------
-
-## Scope
-
-It is already possible to build great arg parsing modules on top of what Node.js provides; the prickly API is abstracted away by these modules. Thus, process.parseArgs() is not necessarily intended for library authors; it is intended for developers of simple CLI tools, ad-hoc scripts, deployed Node.js applications, and learning materials.
-
-It is exceedingly difficult to provide an API which would both be friendly to these Node.js users while being extensible enough for libraries to build upon. We chose to prioritize these use cases because these are currently not well-served by Node.js' API.
-
-----
-
-## Version Matchups
-
-| Node.js | @pkgjs/parseArgs |
-| -- | -- |
-| [v18.3.0](https://nodejs.org/docs/latest-v18.x/api/util.html#utilparseargsconfig) | [v0.9.1](https://github.com/pkgjs/parseargs/tree/v0.9.1#utilparseargsconfig) |
-| [v16.17.0](https://nodejs.org/dist/latest-v16.x/docs/api/util.html#utilparseargsconfig), [v18.7.0](https://nodejs.org/docs/latest-v18.x/api/util.html#utilparseargsconfig) | [0.10.0](https://github.com/pkgjs/parseargs/tree/v0.10.0#utilparseargsconfig) |
-
-----
-
-## 🚀 Getting Started
-
-1. **Install dependencies.**
-
-   ```bash
-   npm install
-   ```
-
-2. **Open the index.js file and start editing!**
-
-3. **Test your code by calling parseArgs through our test file**
-
-   ```bash
-   npm test
-   ```
-
-----
-
-## 🙌 Contributing
-
-Any person who wants to contribute to the initiative is welcome! Please first read the [Contributing Guide](CONTRIBUTING.md)
-
-Additionally, reading the [`Examples w/ Output`](#-examples-w-output) section of this document will be the best way to familiarize yourself with the target expected behavior for parseArgs() once it is fully implemented.
-
-This package was implemented using [tape](https://www.npmjs.com/package/tape) as its test harness.
-
-----
-
-## 💡 `process.mainArgs` Proposal
-
-> Note: This can be moved forward independently of the `util.parseArgs()` proposal/work.
-
-### Implementation:
+The method `.inc` takes an additional `identifier` string argument that
+will append the value of the string as a prerelease identifier:
 
 ```javascript
-process.mainArgs = process.argv.slice(process._exec ? 1 : 2)
+semver.inc('1.2.3', 'prerelease', 'beta')
+// '1.2.4-beta.0'
 ```
 
-----
+command-line example:
 
-## 📃 Examples
-
-```js
-const { parseArgs } = require('@pkgjs/parseargs');
+```bash
+$ semver 1.2.3 -i prerelease --preid beta
+1.2.4-beta.0
 ```
 
-```js
-const { parseArgs } = require('@pkgjs/parseargs');
-// specify the options that may be used
-const options = {
-  foo: { type: 'string'},
-  bar: { type: 'boolean' },
-};
-const args = ['--foo=a', '--bar'];
-const { values, positionals } = parseArgs({ args, options });
-// values = { foo: 'a', bar: true }
-// positionals = []
+Which then can be used to increment further:
+
+```bash
+$ semver 1.2.4-beta.0 -i prerelease
+1.2.4-beta.1
 ```
 
-```js
-const { parseArgs } = require('@pkgjs/parseargs');
-// type:string & multiple
-const options = {
-  foo: {
-    type: 'string',
-    multiple: true,
-  },
-};
-const args = ['--foo=a', '--foo', 'b'];
-const { values, positionals } = parseArgs({ args, options });
-// values = { foo: [ 'a', 'b' ] }
-// positionals = []
+### Advanced Range Syntax
+
+Advanced range syntax desugars to primitive comparators in
+deterministic ways.
+
+Advanced ranges may be combined in the same way as primitive
+comparators using white space or `||`.
+
+#### Hyphen Ranges `X.Y.Z - A.B.C`
+
+Specifies an inclusive set.
+
+* `1.2.3 - 2.3.4` := `>=1.2.3 <=2.3.4`
+
+If a partial version is provided as the first version in the inclusive
+range, then the missing pieces are replaced with zeroes.
+
+* `1.2 - 2.3.4` := `>=1.2.0 <=2.3.4`
+
+If a partial version is provided as the second version in the
+inclusive range, then all versions that start with the supplied parts
+of the tuple are accepted, but nothing that would be greater than the
+provided tuple parts.
+
+* `1.2.3 - 2.3` := `>=1.2.3 <2.4.0`
+* `1.2.3 - 2` := `>=1.2.3 <3.0.0`
+
+#### X-Ranges `1.2.x` `1.X` `1.2.*` `*`
+
+Any of `X`, `x`, or `*` may be used to "stand in" for one of the
+numeric values in the `[major, minor, patch]` tuple.
+
+* `*` := `>=0.0.0` (Any version satisfies)
+* `1.x` := `>=1.0.0 <2.0.0` (Matching major version)
+* `1.2.x` := `>=1.2.0 <1.3.0` (Matching major and minor versions)
+
+A partial version range is treated as an X-Range, so the special
+character is in fact optional.
+
+* `""` (empty string) := `*` := `>=0.0.0`
+* `1` := `1.x.x` := `>=1.0.0 <2.0.0`
+* `1.2` := `1.2.x` := `>=1.2.0 <1.3.0`
+
+#### Tilde Ranges `~1.2.3` `~1.2` `~1`
+
+Allows patch-level changes if a minor version is specified on the
+comparator.  Allows minor-level changes if not.
+
+* `~1.2.3` := `>=1.2.3 <1.(2+1).0` := `>=1.2.3 <1.3.0`
+* `~1.2` := `>=1.2.0 <1.(2+1).0` := `>=1.2.0 <1.3.0` (Same as `1.2.x`)
+* `~1` := `>=1.0.0 <(1+1).0.0` := `>=1.0.0 <2.0.0` (Same as `1.x`)
+* `~0.2.3` := `>=0.2.3 <0.(2+1).0` := `>=0.2.3 <0.3.0`
+* `~0.2` := `>=0.2.0 <0.(2+1).0` := `>=0.2.0 <0.3.0` (Same as `0.2.x`)
+* `~0` := `>=0.0.0 <(0+1).0.0` := `>=0.0.0 <1.0.0` (Same as `0.x`)
+* `~1.2.3-beta.2` := `>=1.2.3-beta.2 <1.3.0` Note that prereleases in
+  the `1.2.3` version will be allowed, if they are greater than or
+  equal to `beta.2`.  So, `1.2.3-beta.4` would be allowed, but
+  `1.2.4-beta.2` would not, because it is a prerelease of a
+  different `[major, minor, patch]` tuple.
+
+#### Caret Ranges `^1.2.3` `^0.2.5` `^0.0.4`
+
+Allows changes that do not modify the left-most non-zero element in the
+`[major, minor, patch]` tuple.  In other words, this allows patch and
+minor updates for versions `1.0.0` and above, patch updates for
+versions `0.X >=0.1.0`, and *no* updates for versions `0.0.X`.
+
+Many authors treat a `0.x` version as if the `x` were the major
+"breaking-change" indicator.
+
+Caret ranges are ideal when an author may make breaking changes
+between `0.2.4` and `0.3.0` releases, which is a common practice.
+However, it presumes that there will *not* be breaking changes between
+`0.2.4` and `0.2.5`.  It allows for changes that are presumed to be
+additive (but non-breaking), according to commonly observed practices.
+
+* `^1.2.3` := `>=1.2.3 <2.0.0`
+* `^0.2.3` := `>=0.2.3 <0.3.0`
+* `^0.0.3` := `>=0.0.3 <0.0.4`
+* `^1.2.3-beta.2` := `>=1.2.3-beta.2 <2.0.0` Note that prereleases in
+  the `1.2.3` version will be allowed, if they are greater than or
+  equal to `beta.2`.  So, `1.2.3-beta.4` would be allowed, but
+  `1.2.4-beta.2` would not, because it is a prerelease of a
+  different `[major, minor, patch]` tuple.
+* `^0.0.3-beta` := `>=0.0.3-beta <0.0.4`  Note that prereleases in the
+  `0.0.3` version *only* will be allowed, if they are greater than or
+  equal to `beta`.  So, `0.0.3-pr.2` would be allowed.
+
+When parsing caret ranges, a missing `patch` value desugars to the
+number `0`, but will allow flexibility within that value, even if the
+major and minor versions are both `0`.
+
+* `^1.2.x` := `>=1.2.0 <2.0.0`
+* `^0.0.x` := `>=0.0.0 <0.1.0`
+* `^0.0` := `>=0.0.0 <0.1.0`
+
+A missing `minor` and `patch` values will desugar to zero, but also
+allow flexibility within those values, even if the major version is
+zero.
+
+* `^1.x` := `>=1.0.0 <2.0.0`
+* `^0.x` := `>=0.0.0 <1.0.0`
+
+### Range Grammar
+
+Putting all this together, here is a Backus-Naur grammar for ranges,
+for the benefit of parser authors:
+
+```bnf
+range-set  ::= range ( logical-or range ) *
+logical-or ::= ( ' ' ) * '||' ( ' ' ) *
+range      ::= hyphen | simple ( ' ' simple ) * | ''
+hyphen     ::= partial ' - ' partial
+simple     ::= primitive | partial | tilde | caret
+primitive  ::= ( '<' | '>' | '>=' | '<=' | '=' ) partial
+partial    ::= xr ( '.' xr ( '.' xr qualifier ? )? )?
+xr         ::= 'x' | 'X' | '*' | nr
+nr         ::= '0' | ['1'-'9'] ( ['0'-'9'] ) *
+tilde      ::= '~' partial
+caret      ::= '^' partial
+qualifier  ::= ( '-' pre )? ( '+' build )?
+pre        ::= parts
+build      ::= parts
+parts      ::= part ( '.' part ) *
+part       ::= nr | [-0-9A-Za-z]+
 ```
 
-```js
-const { parseArgs } = require('@pkgjs/parseargs');
-// shorts
-const options = {
-  foo: {
-    short: 'f',
-    type: 'boolean'
-  },
-};
-const args = ['-f', 'b'];
-const { values, positionals } = parseArgs({ args, options, allowPositionals: true });
-// values = { foo: true }
-// positionals = ['b']
-```
+## Functions
 
-```js
-const { parseArgs } = require('@pkgjs/parseargs');
-// unconfigured
-const options = {};
-const args = ['-f', '--foo=a', '--bar', 'b'];
-const { values, positionals } = parseArgs({ strict: false, args, options, allowPositionals: true });
-// values = { f: true, foo: 'a', bar: true }
-// positionals = ['b']
-```
+All methods and classes take a final `options` object argument.  All
+options in this object are `false` by default.  The options supported
+are:
 
-----
+- `loose`  Be more forgiving about not-quite-valid semver strings.
+  (Any resulting output will always be 100% strict compliant, of
+  course.)  For backwards compatibility reasons, if the `options`
+  argument is a boolean value instead of an object, it is interpreted
+  to be the `loose` param.
+- `includePrerelease`  Set to suppress the [default
+  behavior](https://github.com/npm/node-semver#prerelease-tags) of
+  excluding prerelease tagged versions from ranges unless they are
+  explicitly opted into.
 
-## F.A.Qs
+Strict-mode Comparators and Ranges will be strict about the SemVer
+strings that they parse.
 
-- Is `cmd --foo=bar baz` the same as `cmd baz --foo=bar`?
-  - yes
-- Does the parser execute a function?
-  - no
-- Does the parser execute one of several functions, depending on input?
-  - no
-- Can subcommands take options that are distinct from the main command?
-  - no
-- Does it output generated help when no options match?
-  - no
-- Does it generated short usage?  Like: `usage: ls [-ABCFGHLOPRSTUWabcdefghiklmnopqrstuwx1] [file ...]`
-  - no (no usage/help at all)
-- Does the user provide the long usage text?  For each option?  For the whole command?
-  - no
-- Do subcommands (if implemented) have their own usage output?
-  - no
-- Does usage print if the user runs `cmd --help`?
-  - no
-- Does it set `process.exitCode`?
-  - no
-- Does usage print to stderr or stdout?
-  - N/A
-- Does it check types?  (Say, specify that an option is a boolean, number, etc.)
-  - no
-- Can an option have more than one type?  (string or false, for example)
-  - no
-- Can the user define a type?  (Say, `type: path` to call `path.resolve()` on the argument.)
-  - no
-- Does a `--foo=0o22` mean 0, 22, 18, or "0o22"?
-  - `"0o22"`
-- Does it coerce types?
-  - no
-- Does `--no-foo` coerce to `--foo=false`?  For all options?  Only boolean options?
-  - no, it sets `{values:{'no-foo': true}}`
-- Is `--foo` the same as `--foo=true`?  Only for known booleans?  Only at the end?
-  - no, they are not the same. There is no special handling of `true` as a value so it is just another string.
-- Does it read environment variables?  Ie, is `FOO=1 cmd` the same as `cmd --foo=1`?
-  - no
-- Do unknown arguments raise an error?  Are they parsed?  Are they treated as positional arguments?
-  - no, they are parsed, not treated as positionals
-- Does `--` signal the end of options?
-  - yes
-- Is `--` included as a positional?
-  - no
-- Is `program -- foo` the same as `program foo`?
-  - yes, both store `{positionals:['foo']}`
-- Does the API specify whether a `--` was present/relevant?
-  - no
-- Is `-bar` the same as `--bar`?
-  - no, `-bar` is a short option or options, with expansion logic that follows the
-    [Utility Syntax Guidelines in POSIX.1-2017](https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html). `-bar` expands to `-b`, `-a`, `-r`.
-- Is `---foo` the same as `--foo`?
-  - no
-  - the first is a long option named `'-foo'`
-  - the second is a long option named `'foo'`
-- Is `-` a positional? ie, `bash some-test.sh | tap -`
-  - yes
+* `valid(v)`: Return the parsed version, or null if it's not valid.
+* `inc(v, release)`: Return the version incremented by the release
+  type (`major`,   `premajor`, `minor`, `preminor`, `patch`,
+  `prepatch`, or `prerelease`), or null if it's not valid
+  * `premajor` in one call will bump the version up to the next major
+    version and down to a prerelease of that major version.
+    `preminor`, and `prepatch` work the same way.
+  * If called from a non-prerelease version, the `prerelease` will work the
+    same as `prepatch`. It increments the patch version, then makes a
+    prerelease. If the input version is already a prerelease it simply
+    increments it.
+* `prerelease(v)`: Returns an array of prerelease components, or null
+  if none exist. Example: `prerelease('1.2.3-alpha.1') -> ['alpha', 1]`
+* `major(v)`: Return the major version number.
+* `minor(v)`: Return the minor version number.
+* `patch(v)`: Return the patch version number.
+* `intersects(r1, r2, loose)`: Return true if the two supplied ranges
+  or comparators intersect.
+* `parse(v)`: Attempt to parse a string as a semantic version, returning either
+  a `SemVer` object or `null`.
 
-## Links & Resources
+### Comparison
 
-* [Initial Tooling Issue](https://github.com/nodejs/tooling/issues/19)
-* [Initial Proposal](https://github.com/nodejs/node/pull/35015)
-* [parseArgs Proposal](https://github.com/nodejs/node/pull/42675)
+* `gt(v1, v2)`: `v1 > v2`
+* `gte(v1, v2)`: `v1 >= v2`
+* `lt(v1, v2)`: `v1 < v2`
+* `lte(v1, v2)`: `v1 <= v2`
+* `eq(v1, v2)`: `v1 == v2` This is true if they're logically equivalent,
+  even if they're not the exact same string.  You already know how to
+  compare strings.
+* `neq(v1, v2)`: `v1 != v2` The opposite of `eq`.
+* `cmp(v1, comparator, v2)`: Pass in a comparison string, and it'll call
+  the corresponding function above.  `"==="` and `"!=="` do simple
+  string comparison, but are included for completeness.  Throws if an
+  invalid comparison string is provided.
+* `compare(v1, v2)`: Return `0` if `v1 == v2`, or `1` if `v1` is greater, or `-1` if
+  `v2` is greater.  Sorts in ascending order if passed to `Array.sort()`.
+* `rcompare(v1, v2)`: The reverse of compare.  Sorts an array of versions
+  in descending order when passed to `Array.sort()`.
+* `compareBuild(v1, v2)`: The same as `compare` but considers `build` when two versions
+  are equal.  Sorts in ascending order if passed to `Array.sort()`.
+  `v2` is greater.  Sorts in ascending order if passed to `Array.sort()`.
+* `diff(v1, v2)`: Returns difference between two versions by the release type
+  (`major`, `premajor`, `minor`, `preminor`, `patch`, `prepatch`, or `prerelease`),
+  or null if the versions are the same.
 
-[coverage-image]: https://img.shields.io/nycrc/pkgjs/parseargs
-[coverage-url]: https://github.com/pkgjs/parseargs/blob/main/.nycrc
-[pkgjs/parseargs]: https://github.com/pkgjs/parseargs
+### Comparators
+
+* `intersects(comparator)`: Return true if the comparators intersect
+
+### Ranges
+
+* `validRange(range)`: Return the valid range or null if it's not valid
+* `satisfies(version, range)`: Return true if the version satisfies the
+  range.
+* `maxSatisfying(versions, range)`: Return the highest version in the list
+  that satisfies the range, or `null` if none of them do.
+* `minSatisfying(versions, range)`: Return the lowest version in the list
+  that satisfies the range, or `null` if none of them do.
+* `minVersion(range)`: Return the lowest version that can possibly match
+  the given range.
+* `gtr(version, range)`: Return `true` if version is greater than all the
+  versions possible in the range.
+* `ltr(version, range)`: Return `true` if version is less than all the
+  versions possible in the range.
+* `outside(version, range, hilo)`: Return true if the version is outside
+  the bounds of the range in either the high or low direction.  The
+  `hilo` argument must be either the string `'>'` or `'<'`.  (This is
+  the function called by `gtr` and `ltr`.)
+* `intersects(range)`: Return true if any of the ranges comparators intersect
+
+Note that, since ranges may be non-contiguous, a version might not be
+greater than a range, less than a range, *or* satisfy a range!  For
+example, the range `1.2 <1.2.9 || >2.0.0` would have a hole from `1.2.9`
+until `2.0.0`, so the version `1.2.10` would not be greater than the
+range (because `2.0.1` satisfies, which is higher), nor less than the
+range (since `1.2.8` satisfies, which is lower), and it also does not
+satisfy the range.
+
+If you want to know if a version satisfies or does not satisfy a
+range, use the `satisfies(version, range)` function.
+
+### Coercion
+
+* `coerce(version, options)`: Coerces a string to semver if possible
+
+This aims to provide a very forgiving translation of a non-semver string to
+semver. It looks for the first digit in a string, and consumes all
+remaining characters which satisfy at least a partial semver (e.g., `1`,
+`1.2`, `1.2.3`) up to the max permitted length (256 characters).  Longer
+versions are simply truncated (`4.6.3.9.2-alpha2` becomes `4.6.3`).  All
+surrounding text is simply ignored (`v3.4 replaces v3.3.1` becomes
+`3.4.0`).  Only text which lacks digits will fail coercion (`version one`
+is not valid).  The maximum  length for any semver component considered for
+coercion is 16 characters; longer components will be ignored
+(`10000000000000000.4.7.4` becomes `4.7.4`).  The maximum value for any
+semver component is `Integer.MAX_SAFE_INTEGER || (2**53 - 1)`; higher value
+components are invalid (`9999999999999999.4.7.4` is likely invalid).
+
+If the `options.rtl` flag is set, then `coerce` will return the right-most
+coercible tuple that does not share an ending index with a longer coercible
+tuple.  For example, `1.2.3.4` will return `2.3.4` in rtl mode, not
+`4.0.0`.  `1.2.3/4` will return `4.0.0`, because the `4` is not a part of
+any other overlapping SemVer tuple.
+
+### Clean
+
+* `clean(version)`: Clean a string to be a valid semver if possible
+
+This will return a cleaned and trimmed semver version. If the provided version is not valid a null will be returned. This does not work for ranges. 
+
+ex.
+* `s.clean(' = v 2.1.5foo')`: `null`
+* `s.clean(' = v 2.1.5foo', { loose: true })`: `'2.1.5-foo'`
+* `s.clean(' = v 2.1.5-foo')`: `null`
+* `s.clean(' = v 2.1.5-foo', { loose: true })`: `'2.1.5-foo'`
+* `s.clean('=v2.1.5')`: `'2.1.5'`
+* `s.clean('  =v2.1.5')`: `2.1.5`
+* `s.clean('      2.1.5   ')`: `'2.1.5'`
+* `s.clean('~1.0.0')`: `null`
