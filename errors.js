@@ -1,105 +1,47 @@
-/**
- * @fileoverview Common error classes
- * @author Nicholas C. Zakas
- */
+'use strict';
 
-/**
- * Error thrown when a file or directory is not found.
- */
-export class NotFoundError extends Error {
-	/**
-	 * Name of the error class.
-	 * @type {string}
-	 */
-	name = "NotFoundError";
-
-	/**
-	 * Error code.
-	 * @type {string}
-	 */
-	code = "ENOENT";
-
-	/**
-	 * Creates a new instance.
-	 * @param {string} message The error message.
-	 */
-	constructor(message) {
-		super(`ENOENT: No such file or directory, ${message}`);
-	}
+class ERR_INVALID_ARG_TYPE extends TypeError {
+  constructor(name, expected, actual) {
+    super(`${name} must be ${expected} got ${actual}`);
+    this.code = 'ERR_INVALID_ARG_TYPE';
+  }
 }
 
-/**
- * Error thrown when an operation is not permitted.
- */
-export class PermissionError extends Error {
-	/**
-	 * Name of the error class.
-	 * @type {string}
-	 */
-	name = "PermissionError";
-
-	/**
-	 * Error code.
-	 * @type {string}
-	 */
-	code = "EPERM";
-
-	/**
-	 * Creates a new instance.
-	 * @param {string} message The error message.
-	 */
-	constructor(message) {
-		super(`EPERM: Operation not permitted, ${message}`);
-	}
+class ERR_INVALID_ARG_VALUE extends TypeError {
+  constructor(arg1, arg2, expected) {
+    super(`The property ${arg1} ${expected}. Received '${arg2}'`);
+    this.code = 'ERR_INVALID_ARG_VALUE';
+  }
 }
 
-/**
- * Error thrown when an operation is not allowed on a directory.
- */
-
-export class DirectoryError extends Error {
-	/**
-	 * Name of the error class.
-	 * @type {string}
-	 */
-	name = "DirectoryError";
-
-	/**
-	 * Error code.
-	 * @type {string}
-	 */
-	code = "EISDIR";
-
-	/**
-	 * Creates a new instance.
-	 * @param {string} message The error message.
-	 */
-	constructor(message) {
-		super(`EISDIR: Illegal operation on a directory, ${message}`);
-	}
+class ERR_PARSE_ARGS_INVALID_OPTION_VALUE extends Error {
+  constructor(message) {
+    super(message);
+    this.code = 'ERR_PARSE_ARGS_INVALID_OPTION_VALUE';
+  }
 }
 
-/**
- * Error thrown when a directory is not empty.
- */
-export class NotEmptyError extends Error {
-	/**
-	 * Name of the error class.
-	 * @type {string}
-	 */
-	name = "NotEmptyError";
-
-	/**
-	 * Error code.
-	 * @type {string}
-	 */
-	code = "ENOTEMPTY";
-
-	/**
-	 * Creates a new instance.
-	 * @param {string} message The error message.
-	 */
-	constructor(message) {
-		super(`ENOTEMPTY: Directory not empty, ${message}`);
-	}
+class ERR_PARSE_ARGS_UNKNOWN_OPTION extends Error {
+  constructor(option, allowPositionals) {
+    const suggestDashDash = allowPositionals ? `. To specify a positional argument starting with a '-', place it at the end of the command after '--', as in '-- ${JSON.stringify(option)}` : '';
+    super(`Unknown option '${option}'${suggestDashDash}`);
+    this.code = 'ERR_PARSE_ARGS_UNKNOWN_OPTION';
+  }
 }
+
+class ERR_PARSE_ARGS_UNEXPECTED_POSITIONAL extends Error {
+  constructor(positional) {
+    super(`Unexpected argument '${positional}'. This command does not take positional arguments`);
+    this.code = 'ERR_PARSE_ARGS_UNEXPECTED_POSITIONAL';
+  }
+}
+
+module.exports = {
+  codes: {
+    ERR_INVALID_ARG_TYPE,
+    ERR_INVALID_ARG_VALUE,
+    ERR_PARSE_ARGS_INVALID_OPTION_VALUE,
+    ERR_PARSE_ARGS_UNKNOWN_OPTION,
+    ERR_PARSE_ARGS_UNEXPECTED_POSITIONAL,
+  }
+};
