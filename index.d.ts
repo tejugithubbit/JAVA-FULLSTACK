@@ -1,41 +1,56 @@
-export type Options = {
+declare class Queue<ValueType> implements Iterable<ValueType> {
 	/**
-	By default the wrap is soft, meaning long words may extend past the column width. Setting this to `true` will make it hard wrap at the column width.
-
-	@default false
+	The size of the queue.
 	*/
-	readonly hard?: boolean;
+	readonly size: number;
 
 	/**
-	By default, an attempt is made to split words at spaces, ensuring that they don't extend past the configured columns. If wordWrap is `false`, each column will instead be completely filled splitting words as necessary.
+	Tiny queue data structure.
 
-	@default true
+	The instance is an [`Iterable`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols), which means you can iterate over the queue front to back with a “for…of” loop, or use spreading to convert the queue to an array. Don't do this unless you really need to though, since it's slow.
+
+	@example
+	```
+	import Queue = require('yocto-queue');
+
+	const queue = new Queue();
+
+	queue.enqueue('🦄');
+	queue.enqueue('🌈');
+
+	console.log(queue.size);
+	//=> 2
+
+	console.log(...queue);
+	//=> '🦄 🌈'
+
+	console.log(queue.dequeue());
+	//=> '🦄'
+
+	console.log(queue.dequeue());
+	//=> '🌈'
+	```
 	*/
-	readonly wordWrap?: boolean;
+	constructor();
+
+	[Symbol.iterator](): IterableIterator<ValueType>;
 
 	/**
-	Whitespace on all lines is removed by default. Set this option to `false` if you don't want to trim.
-
-	@default true
+	Add a value to the queue.
 	*/
-	readonly trim?: boolean;
-};
+	enqueue(value: ValueType): void;
 
-/**
-Wrap words to the specified column width.
+	/**
+	Remove the next value in the queue.
 
-@param string - String with ANSI escape codes. Like one styled by [`chalk`](https://github.com/chalk/chalk). Newline characters will be normalized to `\n`.
-@param columns - Number of columns to wrap the text to.
+	@returns The removed value or `undefined` if the queue is empty.
+	*/
+	dequeue(): ValueType | undefined;
 
-@example
-```
-import chalk from 'chalk';
-import wrapAnsi from 'wrap-ansi';
+	/**
+	Clear the queue.
+	*/
+	clear(): void;
+}
 
-const input = 'The quick brown ' + chalk.red('fox jumped over ') +
-	'the lazy ' + chalk.green('dog and then ran away with the unicorn.');
-
-console.log(wrapAnsi(input, 20));
-```
-*/
-export default function wrapAnsi(string: string, columns: number, options?: Options): string;
+export = Queue;

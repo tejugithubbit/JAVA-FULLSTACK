@@ -1,47 +1,62 @@
 'use strict';
 
-class ERR_INVALID_ARG_TYPE extends TypeError {
-  constructor(name, expected, actual) {
-    super(`${name} must be ${expected} got ${actual}`);
-    this.code = 'ERR_INVALID_ARG_TYPE';
-  }
+class YAMLError extends Error {
+    constructor(name, pos, code, message) {
+        super();
+        this.name = name;
+        this.code = code;
+        this.message = message;
+        this.pos = pos;
+    }
 }
-
-class ERR_INVALID_ARG_VALUE extends TypeError {
-  constructor(arg1, arg2, expected) {
-    super(`The property ${arg1} ${expected}. Received '${arg2}'`);
-    this.code = 'ERR_INVALID_ARG_VALUE';
-  }
+class YAMLParseError extends YAMLError {
+    constructor(pos, code, message) {
+        super('YAMLParseError', pos, code, message);
+    }
 }
-
-class ERR_PARSE_ARGS_INVALID_OPTION_VALUE extends Error {
-  constructor(message) {
-    super(message);
-    this.code = 'ERR_PARSE_ARGS_INVALID_OPTION_VALUE';
-  }
+class YAMLWarning extends YAMLError {
+    constructor(pos, code, message) {
+        super('YAMLWarning', pos, code, message);
+    }
 }
-
-class ERR_PARSE_ARGS_UNKNOWN_OPTION extends Error {
-  constructor(option, allowPositionals) {
-    const suggestDashDash = allowPositionals ? `. To specify a positional argument starting with a '-', place it at the end of the command after '--', as in '-- ${JSON.stringify(option)}` : '';
-    super(`Unknown option '${option}'${suggestDashDash}`);
-    this.code = 'ERR_PARSE_ARGS_UNKNOWN_OPTION';
-  }
-}
-
-class ERR_PARSE_ARGS_UNEXPECTED_POSITIONAL extends Error {
-  constructor(positional) {
-    super(`Unexpected argument '${positional}'. This command does not take positional arguments`);
-    this.code = 'ERR_PARSE_ARGS_UNEXPECTED_POSITIONAL';
-  }
-}
-
-module.exports = {
-  codes: {
-    ERR_INVALID_ARG_TYPE,
-    ERR_INVALID_ARG_VALUE,
-    ERR_PARSE_ARGS_INVALID_OPTION_VALUE,
-    ERR_PARSE_ARGS_UNKNOWN_OPTION,
-    ERR_PARSE_ARGS_UNEXPECTED_POSITIONAL,
-  }
+const prettifyError = (src, lc) => (error) => {
+    if (error.pos[0] === -1)
+        return;
+    error.linePos = error.pos.map(pos => lc.linePos(pos));
+    const { line, col } = error.linePos[0];
+    error.message += ` at line ${line}, column ${col}`;
+    let ci = col - 1;
+    let lineStr = src
+        .substring(lc.lineStarts[line - 1], lc.lineStarts[line])
+        .replace(/[\n\r]+$/, '');
+    // Trim to max 80 chars, keeping col position near the middle
+    if (ci >= 60 && lineStr.length > 80) {
+        const trimStart = Math.min(ci - 39, lineStr.length - 79);
+        lineStr = '…' + lineStr.substring(trimStart);
+        ci -= trimStart - 1;
+    }
+    if (lineStr.length > 80)
+        lineStr = lineStr.substring(0, 79) + '…';
+    // Include previous line in context if pointing at line start
+    if (line > 1 && /^ *$/.test(lineStr.substring(0, ci))) {
+        // Regexp won't match if start is trimmed
+        let prev = src.substring(lc.lineStarts[line - 2], lc.lineStarts[line - 1]);
+        if (prev.length > 80)
+            prev = prev.substring(0, 79) + '…\n';
+        lineStr = prev + lineStr;
+    }
+    if (/[^ ]/.test(lineStr)) {
+        let count = 1;
+        const end = error.linePos[1];
+        if (end && end.line === line && end.col > col) {
+            count = Math.max(1, Math.min(end.col - col, 80 - ci));
+        }
+        const pointer = ' '.repeat(ci) + '^'.repeat(count);
+        error.message += `:\n\n${lineStr}\n${pointer}\n`;
+    }
 };
+
+exports.YAMLError = YAMLError;
+exports.YAMLParseError = YAMLParseError;
+exports.YAMLWarning = YAMLWarning;
+exports.prettifyError = prettifyError;
