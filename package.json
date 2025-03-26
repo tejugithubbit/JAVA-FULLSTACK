@@ -1,53 +1,70 @@
 {
-	"name": "supports-color",
-	"version": "5.5.0",
-	"description": "Detect whether a terminal supports color",
+	"name": "supports-preserve-symlinks-flag",
+	"version": "1.0.0",
+	"description": "Determine if the current node version supports the `--preserve-symlinks` flag.",
+	"main": "./index.js",
+	"browser": "./browser.js",
+	"exports": {
+		".": [
+			{
+				"browser": "./browser.js",
+				"default": "./index.js"
+			},
+			"./index.js"
+		],
+		"./package.json": "./package.json"
+	},
+	"sideEffects": false,
+	"scripts": {
+		"prepublishOnly": "safe-publish-latest",
+		"prepublish": "not-in-publish || npm run prepublishOnly",
+		"lint": "eslint --ext=js,mjs .",
+		"pretest": "npm run lint",
+		"tests-only": "nyc tape 'test/**/*.js'",
+		"test": "npm run tests-only",
+		"posttest": "aud --production",
+		"version": "auto-changelog && git add CHANGELOG.md",
+		"postversion": "auto-changelog && git add CHANGELOG.md && git commit --no-edit --amend && git tag -f \"v$(node -e \"console.log(require('./package.json').version)\")\""
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/inspect-js/node-supports-preserve-symlinks-flag.git"
+	},
+	"keywords": [
+		"node",
+		"flag",
+		"symlink",
+		"symlinks",
+		"preserve-symlinks"
+	],
+	"author": "Jordan Harband <ljharb@gmail.com>",
+	"funding": {
+		"url": "https://github.com/sponsors/ljharb"
+	},
 	"license": "MIT",
-	"repository": "chalk/supports-color",
-	"author": {
-		"name": "Sindre Sorhus",
-		"email": "sindresorhus@gmail.com",
-		"url": "sindresorhus.com"
+	"bugs": {
+		"url": "https://github.com/inspect-js/node-supports-preserve-symlinks-flag/issues"
+	},
+	"homepage": "https://github.com/inspect-js/node-supports-preserve-symlinks-flag#readme",
+	"devDependencies": {
+		"@ljharb/eslint-config": "^20.1.0",
+		"aud": "^1.1.5",
+		"auto-changelog": "^2.3.0",
+		"eslint": "^8.6.0",
+		"nyc": "^10.3.2",
+		"safe-publish-latest": "^2.0.0",
+		"semver": "^6.3.0",
+		"tape": "^5.4.0"
 	},
 	"engines": {
-		"node": ">=4"
+		"node": ">= 0.4"
 	},
-	"scripts": {
-		"test": "xo && ava"
-	},
-	"files": [
-		"index.js",
-		"browser.js"
-	],
-	"keywords": [
-		"color",
-		"colour",
-		"colors",
-		"terminal",
-		"console",
-		"cli",
-		"ansi",
-		"styles",
-		"tty",
-		"rgb",
-		"256",
-		"shell",
-		"xterm",
-		"command-line",
-		"support",
-		"supports",
-		"capability",
-		"detect",
-		"truecolor",
-		"16m"
-	],
-	"dependencies": {
-		"has-flag": "^3.0.0"
-	},
-	"devDependencies": {
-		"ava": "^0.25.0",
-		"import-fresh": "^2.0.0",
-		"xo": "^0.20.0"
-	},
-	"browser": "browser.js"
+	"auto-changelog": {
+		"output": "CHANGELOG.md",
+		"template": "keepachangelog",
+		"unreleased": false,
+		"commitLimit": false,
+		"backfillLimit": false,
+		"hideCredit": true
+	}
 }
