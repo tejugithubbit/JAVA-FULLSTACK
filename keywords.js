@@ -1,4 +1,4 @@
-export var ContextualKeyword; (function (ContextualKeyword) {
+"use strict";Object.defineProperty(exports, "__esModule", {value: true});var ContextualKeyword; (function (ContextualKeyword) {
   const NONE = 0; ContextualKeyword[ContextualKeyword["NONE"] = NONE] = "NONE";
   const _abstract = NONE + 1; ContextualKeyword[ContextualKeyword["_abstract"] = _abstract] = "_abstract";
   const _accessor = _abstract + 1; ContextualKeyword[ContextualKeyword["_accessor"] = _accessor] = "_accessor";
@@ -40,4 +40,4 @@ export var ContextualKeyword; (function (ContextualKeyword) {
   const _type = _symbol + 1; ContextualKeyword[ContextualKeyword["_type"] = _type] = "_type";
   const _unique = _type + 1; ContextualKeyword[ContextualKeyword["_unique"] = _unique] = "_unique";
   const _using = _unique + 1; ContextualKeyword[ContextualKeyword["_using"] = _using] = "_using";
-})(ContextualKeyword || (ContextualKeyword = {}));
+})(ContextualKeyword || (exports.ContextualKeyword = ContextualKeyword = {}));

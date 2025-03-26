@@ -1,4 +1,4 @@
-import {ContextualKeyword} from "../parser/tokenizer/keywords";
+"use strict";Object.defineProperty(exports, "__esModule", {value: true});var _keywords = require('../parser/tokenizer/keywords');
 
 
 /**
@@ -10,7 +10,7 @@ import {ContextualKeyword} from "../parser/tokenizer/keywords";
  * chain/nullish operations need to be tracked but don't silence await, but a nested async function
  * (or any other nested scope) will make the await not count.
  */
-export default function isAsyncOperation(tokens) {
+ function isAsyncOperation(tokens) {
   let index = tokens.currentIndex();
   let depth = 0;
   const startToken = tokens.currentToken();
@@ -26,7 +26,7 @@ export default function isAsyncOperation(tokens) {
     depth -= token.numNullishCoalesceEnds;
 
     if (
-      token.contextualKeyword === ContextualKeyword._await &&
+      token.contextualKeyword === _keywords.ContextualKeyword._await &&
       token.identifierRole == null &&
       token.scopeDepth === startToken.scopeDepth
     ) {
@@ -35,4 +35,4 @@ export default function isAsyncOperation(tokens) {
     index += 1;
   } while (depth > 0 && index < tokens.tokens.length);
   return false;
-}
+} exports.default = isAsyncOperation;

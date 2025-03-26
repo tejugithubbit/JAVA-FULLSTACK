@@ -1,9 +1,9 @@
- function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }
+"use strict";Object.defineProperty(exports, "__esModule", {value: true}); function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; } function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }
 
-import {TokenType as tt} from "../parser/tokenizer/types";
+var _types = require('../parser/tokenizer/types');
 
 
-import Transformer from "./Transformer";
+var _Transformer = require('./Transformer'); var _Transformer2 = _interopRequireDefault(_Transformer);
 
 const JEST_GLOBAL_NAME = "jest";
 const HOISTED_METHODS = ["mock", "unmock", "enableAutomock", "disableAutomock"];
@@ -16,7 +16,7 @@ const HOISTED_METHODS = ["mock", "unmock", "enableAutomock", "disableAutomock"];
  * wrap each invocation in a function statement and then call the function from
  * the top of the file.
  */
-export default class JestHoistTransformer extends Transformer {
+ class JestHoistTransformer extends _Transformer2.default {
     __init() {this.hoistedFunctionNames = []}
 
   constructor(
@@ -31,7 +31,7 @@ export default class JestHoistTransformer extends Transformer {
   process() {
     if (
       this.tokens.currentToken().scopeDepth === 0 &&
-      this.tokens.matches4(tt.name, tt.dot, tt.name, tt.parenL) &&
+      this.tokens.matches4(_types.TokenType.name, _types.TokenType.dot, _types.TokenType.name, _types.TokenType.parenL) &&
       this.tokens.identifierName() === JEST_GLOBAL_NAME
     ) {
       // TODO: This only works if imports transform is active, which it will be for jest.
@@ -71,7 +71,7 @@ export default class JestHoistTransformer extends Transformer {
     let followsNonHoistedJestCall = false;
 
     // Iterate through all chained calls on the jest object.
-    while (this.tokens.matches3(tt.dot, tt.name, tt.parenL)) {
+    while (this.tokens.matches3(_types.TokenType.dot, _types.TokenType.name, _types.TokenType.parenL)) {
       const methodName = this.tokens.identifierNameAtIndex(this.tokens.currentIndex() + 1);
       const shouldHoist = HOISTED_METHODS.includes(methodName);
       if (shouldHoist) {
@@ -83,7 +83,7 @@ export default class JestHoistTransformer extends Transformer {
         this.tokens.copyToken();
         this.tokens.copyToken();
         this.rootTransformer.processBalancedCode();
-        this.tokens.copyExpectedToken(tt.parenR);
+        this.tokens.copyExpectedToken(_types.TokenType.parenR);
         this.tokens.appendCode(";}");
         followsNonHoistedJestCall = false;
       } else {
@@ -101,11 +101,11 @@ export default class JestHoistTransformer extends Transformer {
         this.tokens.copyToken();
         this.tokens.copyToken();
         this.rootTransformer.processBalancedCode();
-        this.tokens.copyExpectedToken(tt.parenR);
+        this.tokens.copyExpectedToken(_types.TokenType.parenR);
         followsNonHoistedJestCall = true;
       }
     }
 
     return true;
   }
-}
+} exports.default = JestHoistTransformer;

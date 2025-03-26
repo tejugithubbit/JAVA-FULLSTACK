@@ -1,7 +1,7 @@
+"use strict";Object.defineProperty(exports, "__esModule", {value: true}); function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _types = require('../parser/tokenizer/types');
 
-import {TokenType as tt} from "../parser/tokenizer/types";
-
-import Transformer from "./Transformer";
+var _Transformer = require('./Transformer'); var _Transformer2 = _interopRequireDefault(_Transformer);
 
 /**
  * Transformer supporting the optional chaining and nullish coalescing operators.
@@ -12,13 +12,13 @@ import Transformer from "./Transformer";
  * The prefix and suffix code snippets are handled by TokenProcessor, and this transformer handles
  * the operators themselves.
  */
-export default class OptionalChainingNullishTransformer extends Transformer {
+ class OptionalChainingNullishTransformer extends _Transformer2.default {
   constructor( tokens,  nameManager) {
     super();this.tokens = tokens;this.nameManager = nameManager;;
   }
 
   process() {
-    if (this.tokens.matches1(tt.nullishCoalescing)) {
+    if (this.tokens.matches1(_types.TokenType.nullishCoalescing)) {
       const token = this.tokens.currentToken();
       if (this.tokens.tokens[token.nullishStartIndex].isAsyncOperation) {
         this.tokens.replaceTokenTrimmingLeftWhitespace(", async () => (");
@@ -27,7 +27,7 @@ export default class OptionalChainingNullishTransformer extends Transformer {
       }
       return true;
     }
-    if (this.tokens.matches1(tt._delete)) {
+    if (this.tokens.matches1(_types.TokenType._delete)) {
       const nextToken = this.tokens.tokenAtRelativeIndex(1);
       if (nextToken.isOptionalChainStart) {
         this.tokens.removeInitialToken();
@@ -41,13 +41,13 @@ export default class OptionalChainingNullishTransformer extends Transformer {
       this.tokens.tokens[chainStart].isOptionalChainStart &&
       // Super subscripts can't be optional (since super is never null/undefined), and the syntax
       // relies on the subscript being intact, so leave this token alone.
-      this.tokens.tokenAtRelativeIndex(-1).type !== tt._super
+      this.tokens.tokenAtRelativeIndex(-1).type !== _types.TokenType._super
     ) {
       const param = this.nameManager.claimFreeName("_");
       let arrowStartSnippet;
       if (
         chainStart > 0 &&
-        this.tokens.matches1AtIndex(chainStart - 1, tt._delete) &&
+        this.tokens.matches1AtIndex(chainStart - 1, _types.TokenType._delete) &&
         this.isLastSubscriptInChain()
       ) {
         // Delete operations are special: we already removed the delete keyword, and to still
@@ -61,22 +61,22 @@ export default class OptionalChainingNullishTransformer extends Transformer {
         arrowStartSnippet = `async ${arrowStartSnippet}`;
       }
       if (
-        this.tokens.matches2(tt.questionDot, tt.parenL) ||
-        this.tokens.matches2(tt.questionDot, tt.lessThan)
+        this.tokens.matches2(_types.TokenType.questionDot, _types.TokenType.parenL) ||
+        this.tokens.matches2(_types.TokenType.questionDot, _types.TokenType.lessThan)
       ) {
         if (this.justSkippedSuper()) {
           this.tokens.appendCode(".bind(this)");
         }
         this.tokens.replaceTokenTrimmingLeftWhitespace(`, 'optionalCall', ${arrowStartSnippet}`);
-      } else if (this.tokens.matches2(tt.questionDot, tt.bracketL)) {
+      } else if (this.tokens.matches2(_types.TokenType.questionDot, _types.TokenType.bracketL)) {
         this.tokens.replaceTokenTrimmingLeftWhitespace(`, 'optionalAccess', ${arrowStartSnippet}`);
-      } else if (this.tokens.matches1(tt.questionDot)) {
+      } else if (this.tokens.matches1(_types.TokenType.questionDot)) {
         this.tokens.replaceTokenTrimmingLeftWhitespace(`, 'optionalAccess', ${arrowStartSnippet}.`);
-      } else if (this.tokens.matches1(tt.dot)) {
+      } else if (this.tokens.matches1(_types.TokenType.dot)) {
         this.tokens.replaceTokenTrimmingLeftWhitespace(`, 'access', ${arrowStartSnippet}.`);
-      } else if (this.tokens.matches1(tt.bracketL)) {
+      } else if (this.tokens.matches1(_types.TokenType.bracketL)) {
         this.tokens.replaceTokenTrimmingLeftWhitespace(`, 'access', ${arrowStartSnippet}[`);
-      } else if (this.tokens.matches1(tt.parenL)) {
+      } else if (this.tokens.matches1(_types.TokenType.parenL)) {
         if (this.justSkippedSuper()) {
           this.tokens.appendCode(".bind(this)");
         }
@@ -147,9 +147,9 @@ export default class OptionalChainingNullishTransformer extends Transformer {
 
       // This subscript token is a later one in the same chain.
       if (depth === 0 && this.tokens.tokens[index].subscriptStartIndex != null) {
-        return this.tokens.tokens[index - 1].type === tt._super;
+        return this.tokens.tokens[index - 1].type === _types.TokenType._super;
       }
       index--;
     }
   }
-}
+} exports.default = OptionalChainingNullishTransformer;

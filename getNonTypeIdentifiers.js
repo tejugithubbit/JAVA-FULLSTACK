@@ -1,43 +1,43 @@
+"use strict";Object.defineProperty(exports, "__esModule", {value: true}); function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _tokenizer = require('../parser/tokenizer');
+var _types = require('../parser/tokenizer/types');
 
-import {IdentifierRole} from "../parser/tokenizer";
-import {TokenType, TokenType as tt} from "../parser/tokenizer/types";
+var _JSXTransformer = require('../transformers/JSXTransformer');
+var _getJSXPragmaInfo = require('./getJSXPragmaInfo'); var _getJSXPragmaInfo2 = _interopRequireDefault(_getJSXPragmaInfo);
 
-import {startsWithLowerCase} from "../transformers/JSXTransformer";
-import getJSXPragmaInfo from "./getJSXPragmaInfo";
-
-export function getNonTypeIdentifiers(tokens, options) {
-  const jsxPragmaInfo = getJSXPragmaInfo(options);
+ function getNonTypeIdentifiers(tokens, options) {
+  const jsxPragmaInfo = _getJSXPragmaInfo2.default.call(void 0, options);
   const nonTypeIdentifiers = new Set();
   for (let i = 0; i < tokens.tokens.length; i++) {
     const token = tokens.tokens[i];
     if (
-      token.type === tt.name &&
+      token.type === _types.TokenType.name &&
       !token.isType &&
-      (token.identifierRole === IdentifierRole.Access ||
-        token.identifierRole === IdentifierRole.ObjectShorthand ||
-        token.identifierRole === IdentifierRole.ExportAccess) &&
+      (token.identifierRole === _tokenizer.IdentifierRole.Access ||
+        token.identifierRole === _tokenizer.IdentifierRole.ObjectShorthand ||
+        token.identifierRole === _tokenizer.IdentifierRole.ExportAccess) &&
       !token.shadowsGlobal
     ) {
       nonTypeIdentifiers.add(tokens.identifierNameForToken(token));
     }
-    if (token.type === tt.jsxTagStart) {
+    if (token.type === _types.TokenType.jsxTagStart) {
       nonTypeIdentifiers.add(jsxPragmaInfo.base);
     }
     if (
-      token.type === tt.jsxTagStart &&
+      token.type === _types.TokenType.jsxTagStart &&
       i + 1 < tokens.tokens.length &&
-      tokens.tokens[i + 1].type === tt.jsxTagEnd
+      tokens.tokens[i + 1].type === _types.TokenType.jsxTagEnd
     ) {
       nonTypeIdentifiers.add(jsxPragmaInfo.base);
       nonTypeIdentifiers.add(jsxPragmaInfo.fragmentBase);
     }
-    if (token.type === tt.jsxName && token.identifierRole === IdentifierRole.Access) {
+    if (token.type === _types.TokenType.jsxName && token.identifierRole === _tokenizer.IdentifierRole.Access) {
       const identifierName = tokens.identifierNameForToken(token);
       // Lower-case single-component tag names like "div" don't count.
-      if (!startsWithLowerCase(identifierName) || tokens.tokens[i + 1].type === TokenType.dot) {
+      if (!_JSXTransformer.startsWithLowerCase.call(void 0, identifierName) || tokens.tokens[i + 1].type === _types.TokenType.dot) {
         nonTypeIdentifiers.add(tokens.identifierNameForToken(token));
       }
     }
   }
   return nonTypeIdentifiers;
-}
+} exports.getNonTypeIdentifiers = getNonTypeIdentifiers;

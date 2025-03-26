@@ -1,31 +1,29 @@
+'use strict';
 
+var test = require('tape');
+var semver = require('semver');
 
-import {augmentError, initParser, state} from "./traverser/base";
-import {parseFile} from "./traverser/index";
+var supportsPreserveSymlinks = require('../');
+var browser = require('../browser');
 
-export class File {
-  
-  
+test('supportsPreserveSymlinks', function (t) {
+	t.equal(typeof supportsPreserveSymlinks, 'boolean', 'is a boolean');
 
-  constructor(tokens, scopes) {
-    this.tokens = tokens;
-    this.scopes = scopes;
-  }
-}
+	t.equal(browser, null, 'browser file is `null`');
+	t.equal(
+		supportsPreserveSymlinks,
+		null,
+		'in a browser, is null',
+		{ skip: typeof window === 'undefined' }
+	);
 
-export function parse(
-  input,
-  isJSXEnabled,
-  isTypeScriptEnabled,
-  isFlowEnabled,
-) {
-  if (isFlowEnabled && isTypeScriptEnabled) {
-    throw new Error("Cannot combine flow and typescript plugins.");
-  }
-  initParser(input, isJSXEnabled, isTypeScriptEnabled, isFlowEnabled);
-  const result = parseFile();
-  if (state.error) {
-    throw augmentError(state.error);
-  }
-  return result;
-}
+	var expected = semver.satisfies(process.version, '>= 6.2');
+	t.equal(
+		supportsPreserveSymlinks,
+		expected,
+		'is true in node v6.2+, false otherwise (actual: ' + supportsPreserveSymlinks + ', expected ' + expected + ')',
+		{ skip: typeof window !== 'undefined' }
+	);
+
+	t.end();
+});

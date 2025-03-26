@@ -1,16 +1,16 @@
+"use strict";Object.defineProperty(exports, "__esModule", {value: true}); function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 
+var _xhtml = require('../parser/plugins/jsx/xhtml'); var _xhtml2 = _interopRequireDefault(_xhtml);
+var _tokenizer = require('../parser/tokenizer');
+var _types = require('../parser/tokenizer/types');
+var _charcodes = require('../parser/util/charcodes');
 
-import XHTMLEntities from "../parser/plugins/jsx/xhtml";
-import {JSXRole} from "../parser/tokenizer";
-import {TokenType as tt} from "../parser/tokenizer/types";
-import {charCodes} from "../parser/util/charcodes";
+var _getJSXPragmaInfo = require('../util/getJSXPragmaInfo'); var _getJSXPragmaInfo2 = _interopRequireDefault(_getJSXPragmaInfo);
 
-import getJSXPragmaInfo, {} from "../util/getJSXPragmaInfo";
+var _Transformer = require('./Transformer'); var _Transformer2 = _interopRequireDefault(_Transformer);
 
-import Transformer from "./Transformer";
-
-export default class JSXTransformer extends Transformer {
+ class JSXTransformer extends _Transformer2.default {
   
   
   
@@ -36,13 +36,13 @@ export default class JSXTransformer extends Transformer {
      options,
   ) {
     super();this.rootTransformer = rootTransformer;this.tokens = tokens;this.importProcessor = importProcessor;this.nameManager = nameManager;this.options = options;JSXTransformer.prototype.__init.call(this);JSXTransformer.prototype.__init2.call(this);JSXTransformer.prototype.__init3.call(this);JSXTransformer.prototype.__init4.call(this);JSXTransformer.prototype.__init5.call(this);;
-    this.jsxPragmaInfo = getJSXPragmaInfo(options);
+    this.jsxPragmaInfo = _getJSXPragmaInfo2.default.call(void 0, options);
     this.isAutomaticRuntime = options.jsxRuntime === "automatic";
     this.jsxImportSource = options.jsxImportSource || "react";
   }
 
   process() {
-    if (this.tokens.matches1(tt.jsxTagStart)) {
+    if (this.tokens.matches1(_types.TokenType.jsxTagStart)) {
       this.processJSXTag();
       return true;
     }
@@ -85,7 +85,7 @@ export default class JSXTransformer extends Transformer {
     // Calculate line number information at the very start (if in development
     // mode) so that the information is guaranteed to be queried in token order.
     const elementLocationCode = this.options.production ? null : this.getElementLocationCode(start);
-    if (this.isAutomaticRuntime && jsxRole !== JSXRole.KeyAfterPropSpread) {
+    if (this.isAutomaticRuntime && jsxRole !== _tokenizer.JSXRole.KeyAfterPropSpread) {
       this.transformTagToJSXFunc(elementLocationCode, jsxRole);
     } else {
       this.transformTagToCreateElement(elementLocationCode);
@@ -122,12 +122,12 @@ export default class JSXTransformer extends Transformer {
    * jsxs('div', {a: 1, children: ["Hello", x]}, 2)
    */
   transformTagToJSXFunc(elementLocationCode, jsxRole) {
-    const isStatic = jsxRole === JSXRole.StaticChildren;
+    const isStatic = jsxRole === _tokenizer.JSXRole.StaticChildren;
     // First tag is always jsxTagStart.
     this.tokens.replaceToken(this.getJSXFuncInvocationCode(isStatic));
 
     let keyCode = null;
-    if (this.tokens.matches1(tt.jsxTagEnd)) {
+    if (this.tokens.matches1(_types.TokenType.jsxTagEnd)) {
       // Fragment syntax.
       this.tokens.replaceToken(`${this.getFragmentCode()}, {`);
       this.processAutomaticChildrenAndEndProps(jsxRole);
@@ -137,10 +137,10 @@ export default class JSXTransformer extends Transformer {
       this.tokens.appendCode(", {");
       keyCode = this.processProps(true);
 
-      if (this.tokens.matches2(tt.slash, tt.jsxTagEnd)) {
+      if (this.tokens.matches2(_types.TokenType.slash, _types.TokenType.jsxTagEnd)) {
         // Self-closing tag, no children to add, so close the props.
         this.tokens.appendCode("}");
-      } else if (this.tokens.matches1(tt.jsxTagEnd)) {
+      } else if (this.tokens.matches1(_types.TokenType.jsxTagEnd)) {
         // Tag with children.
         this.tokens.removeToken();
         this.processAutomaticChildrenAndEndProps(jsxRole);
@@ -166,7 +166,7 @@ export default class JSXTransformer extends Transformer {
     // We're at the close-tag or the end of a self-closing tag, so remove
     // everything else and close the function call.
     this.tokens.removeInitialToken();
-    while (!this.tokens.matches1(tt.jsxTagEnd)) {
+    while (!this.tokens.matches1(_types.TokenType.jsxTagEnd)) {
       this.tokens.removeToken();
     }
     this.tokens.replaceToken(")");
@@ -186,7 +186,7 @@ export default class JSXTransformer extends Transformer {
     // First tag is always jsxTagStart.
     this.tokens.replaceToken(this.getCreateElementInvocationCode());
 
-    if (this.tokens.matches1(tt.jsxTagEnd)) {
+    if (this.tokens.matches1(_types.TokenType.jsxTagEnd)) {
       // Fragment syntax.
       this.tokens.replaceToken(`${this.getFragmentCode()}, null`);
       this.processChildren(true);
@@ -195,9 +195,9 @@ export default class JSXTransformer extends Transformer {
       this.processTagIntro();
       this.processPropsObjectWithDevInfo(elementLocationCode);
 
-      if (this.tokens.matches2(tt.slash, tt.jsxTagEnd)) {
+      if (this.tokens.matches2(_types.TokenType.slash, _types.TokenType.jsxTagEnd)) {
         // Self-closing tag; no children to process.
-      } else if (this.tokens.matches1(tt.jsxTagEnd)) {
+      } else if (this.tokens.matches1(_types.TokenType.jsxTagEnd)) {
         // Tag with children and a close-tag; process the children as args.
         this.tokens.removeToken();
         this.processChildren(true);
@@ -208,7 +208,7 @@ export default class JSXTransformer extends Transformer {
     // We're at the close-tag or the end of a self-closing tag, so remove
     // everything else and close the function call.
     this.tokens.removeInitialToken();
-    while (!this.tokens.matches1(tt.jsxTagEnd)) {
+    while (!this.tokens.matches1(_types.TokenType.jsxTagEnd)) {
       this.tokens.removeToken();
     }
     this.tokens.replaceToken(")");
@@ -329,11 +329,11 @@ export default class JSXTransformer extends Transformer {
     let introEnd = this.tokens.currentIndex() + 1;
     while (
       this.tokens.tokens[introEnd].isType ||
-      (!this.tokens.matches2AtIndex(introEnd - 1, tt.jsxName, tt.jsxName) &&
-        !this.tokens.matches2AtIndex(introEnd - 1, tt.greaterThan, tt.jsxName) &&
-        !this.tokens.matches1AtIndex(introEnd, tt.braceL) &&
-        !this.tokens.matches1AtIndex(introEnd, tt.jsxTagEnd) &&
-        !this.tokens.matches2AtIndex(introEnd, tt.slash, tt.jsxTagEnd))
+      (!this.tokens.matches2AtIndex(introEnd - 1, _types.TokenType.jsxName, _types.TokenType.jsxName) &&
+        !this.tokens.matches2AtIndex(introEnd - 1, _types.TokenType.greaterThan, _types.TokenType.jsxName) &&
+        !this.tokens.matches1AtIndex(introEnd, _types.TokenType.braceL) &&
+        !this.tokens.matches1AtIndex(introEnd, _types.TokenType.jsxTagEnd) &&
+        !this.tokens.matches2AtIndex(introEnd, _types.TokenType.slash, _types.TokenType.jsxTagEnd))
     ) {
       introEnd++;
     }
@@ -356,7 +356,7 @@ export default class JSXTransformer extends Transformer {
     const devProps = this.options.production
       ? ""
       : `__self: this, __source: ${this.getDevSource(elementLocationCode)}`;
-    if (!this.tokens.matches1(tt.jsxName) && !this.tokens.matches1(tt.braceL)) {
+    if (!this.tokens.matches1(_types.TokenType.jsxName) && !this.tokens.matches1(_types.TokenType.braceL)) {
       if (devProps) {
         this.tokens.appendCode(`, {${devProps}}`);
       } else {
@@ -386,7 +386,7 @@ export default class JSXTransformer extends Transformer {
   processProps(extractKeyCode) {
     let keyCode = null;
     while (true) {
-      if (this.tokens.matches2(tt.jsxName, tt.eq)) {
+      if (this.tokens.matches2(_types.TokenType.jsxName, _types.TokenType.eq)) {
         // This is a regular key={value} or key="value" prop.
         const propName = this.tokens.identifierName();
         if (extractKeyCode && propName === "key") {
@@ -417,12 +417,12 @@ export default class JSXTransformer extends Transformer {
           this.tokens.replaceToken(": ");
           this.processPropValue();
         }
-      } else if (this.tokens.matches1(tt.jsxName)) {
+      } else if (this.tokens.matches1(_types.TokenType.jsxName)) {
         // This is a shorthand prop like <input disabled />.
         const propName = this.tokens.identifierName();
         this.processPropName(propName);
         this.tokens.appendCode(": true");
-      } else if (this.tokens.matches1(tt.braceL)) {
+      } else if (this.tokens.matches1(_types.TokenType.braceL)) {
         // This is prop spread, like <div {...getProps()}>, which we can pass
         // through fairly directly as an object spread.
         this.tokens.replaceToken("");
@@ -445,11 +445,11 @@ export default class JSXTransformer extends Transformer {
   }
 
   processPropValue() {
-    if (this.tokens.matches1(tt.braceL)) {
+    if (this.tokens.matches1(_types.TokenType.braceL)) {
       this.tokens.replaceToken("");
       this.rootTransformer.processBalancedCode();
       this.tokens.replaceToken("");
-    } else if (this.tokens.matches1(tt.jsxTagStart)) {
+    } else if (this.tokens.matches1(_types.TokenType.jsxTagStart)) {
       this.processJSXTag();
     } else {
       this.processStringPropValue();
@@ -469,7 +469,7 @@ export default class JSXTransformer extends Transformer {
    * prop for the children and close the object literal.
    */
   processAutomaticChildrenAndEndProps(jsxRole) {
-    if (jsxRole === JSXRole.StaticChildren) {
+    if (jsxRole === _tokenizer.JSXRole.StaticChildren) {
       this.tokens.appendCode(" children: [");
       this.processChildren(false);
       this.tokens.appendCode("]}");
@@ -478,7 +478,7 @@ export default class JSXTransformer extends Transformer {
       // all remaining children (if any) will resolve to empty. If there are no
       // non-empty children, don't emit a children prop at all, but still
       // process children so that we properly transform the code into nothing.
-      if (jsxRole === JSXRole.OneChild) {
+      if (jsxRole === _tokenizer.JSXRole.OneChild) {
         this.tokens.appendCode(" children: ");
       }
       this.processChildren(false);
@@ -493,13 +493,13 @@ export default class JSXTransformer extends Transformer {
   processChildren(needsInitialComma) {
     let needsComma = needsInitialComma;
     while (true) {
-      if (this.tokens.matches2(tt.jsxTagStart, tt.slash)) {
+      if (this.tokens.matches2(_types.TokenType.jsxTagStart, _types.TokenType.slash)) {
         // Closing tag, so no more children.
         return;
       }
       let didEmitElement = false;
-      if (this.tokens.matches1(tt.braceL)) {
-        if (this.tokens.matches2(tt.braceL, tt.braceR)) {
+      if (this.tokens.matches1(_types.TokenType.braceL)) {
+        if (this.tokens.matches2(_types.TokenType.braceL, _types.TokenType.braceR)) {
           // Empty interpolations and comment-only interpolations are allowed
           // and don't create an extra child arg.
           this.tokens.replaceToken("");
@@ -511,12 +511,12 @@ export default class JSXTransformer extends Transformer {
           this.tokens.replaceToken("");
           didEmitElement = true;
         }
-      } else if (this.tokens.matches1(tt.jsxTagStart)) {
+      } else if (this.tokens.matches1(_types.TokenType.jsxTagStart)) {
         // Child JSX element
         this.tokens.appendCode(needsComma ? ", " : "");
         this.processJSXTag();
         didEmitElement = true;
-      } else if (this.tokens.matches1(tt.jsxText) || this.tokens.matches1(tt.jsxEmptyText)) {
+      } else if (this.tokens.matches1(_types.TokenType.jsxText) || this.tokens.matches1(_types.TokenType.jsxEmptyText)) {
         didEmitElement = this.processChildTextElement(needsComma);
       } else {
         throw new Error("Unexpected token when processing JSX children.");
@@ -557,7 +557,7 @@ export default class JSXTransformer extends Transformer {
     }
     return this.filenameVarName;
   }
-}
+} exports.default = JSXTransformer;
 
 /**
  * Spec for identifiers: https://tc39.github.io/ecma262/#prod-IdentifierStart.
@@ -565,10 +565,10 @@ export default class JSXTransformer extends Transformer {
  * Really only treat anything starting with a-z as tag names.  `_`, `$`, `é`
  * should be treated as component names
  */
-export function startsWithLowerCase(s) {
+ function startsWithLowerCase(s) {
   const firstChar = s.charCodeAt(0);
-  return firstChar >= charCodes.lowercaseA && firstChar <= charCodes.lowercaseZ;
-}
+  return firstChar >= _charcodes.charCodes.lowercaseA && firstChar <= _charcodes.charCodes.lowercaseZ;
+} exports.startsWithLowerCase = startsWithLowerCase;
 
 /**
  * Turn the given jsxText string into a JS string literal. Leading and trailing
@@ -707,7 +707,7 @@ function processEntity(text, indexAfterAmpersand) {
       const ch = text[i];
       i++;
       if (ch === ";") {
-        entity = XHTMLEntities.get(str);
+        entity = _xhtml2.default.get(str);
         break;
       }
       str += ch;
@@ -721,13 +721,13 @@ function processEntity(text, indexAfterAmpersand) {
 }
 
 function isDecimalDigit(code) {
-  return code >= charCodes.digit0 && code <= charCodes.digit9;
+  return code >= _charcodes.charCodes.digit0 && code <= _charcodes.charCodes.digit9;
 }
 
 function isHexDigit(code) {
   return (
-    (code >= charCodes.digit0 && code <= charCodes.digit9) ||
-    (code >= charCodes.lowercaseA && code <= charCodes.lowercaseF) ||
-    (code >= charCodes.uppercaseA && code <= charCodes.uppercaseF)
+    (code >= _charcodes.charCodes.digit0 && code <= _charcodes.charCodes.digit9) ||
+    (code >= _charcodes.charCodes.lowercaseA && code <= _charcodes.charCodes.lowercaseF) ||
+    (code >= _charcodes.charCodes.uppercaseA && code <= _charcodes.charCodes.uppercaseF)
   );
 }

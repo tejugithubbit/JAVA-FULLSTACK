@@ -1,5 +1,5 @@
-// Use a Map rather than object to avoid unexpected __proto__ access.
-export default new Map([
+"use strict";Object.defineProperty(exports, "__esModule", {value: true});// Use a Map rather than object to avoid unexpected __proto__ access.
+exports. default = new Map([
   ["quot", "\u0022"],
   ["amp", "&"],
   ["apos", "\u0027"],

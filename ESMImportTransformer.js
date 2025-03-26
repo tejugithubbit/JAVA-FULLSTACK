@@ -1,27 +1,27 @@
+"use strict";Object.defineProperty(exports, "__esModule", {value: true}); function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+
+var _keywords = require('../parser/tokenizer/keywords');
+var _types = require('../parser/tokenizer/types');
+
+var _elideImportEquals = require('../util/elideImportEquals'); var _elideImportEquals2 = _interopRequireDefault(_elideImportEquals);
 
 
 
-import {ContextualKeyword} from "../parser/tokenizer/keywords";
-import {TokenType as tt} from "../parser/tokenizer/types";
+var _getDeclarationInfo = require('../util/getDeclarationInfo'); var _getDeclarationInfo2 = _interopRequireDefault(_getDeclarationInfo);
+var _getImportExportSpecifierInfo = require('../util/getImportExportSpecifierInfo'); var _getImportExportSpecifierInfo2 = _interopRequireDefault(_getImportExportSpecifierInfo);
+var _getNonTypeIdentifiers = require('../util/getNonTypeIdentifiers');
+var _isExportFrom = require('../util/isExportFrom'); var _isExportFrom2 = _interopRequireDefault(_isExportFrom);
+var _removeMaybeImportAttributes = require('../util/removeMaybeImportAttributes');
+var _shouldElideDefaultExport = require('../util/shouldElideDefaultExport'); var _shouldElideDefaultExport2 = _interopRequireDefault(_shouldElideDefaultExport);
 
-import elideImportEquals from "../util/elideImportEquals";
-import getDeclarationInfo, {
-
-  EMPTY_DECLARATION_INFO,
-} from "../util/getDeclarationInfo";
-import getImportExportSpecifierInfo from "../util/getImportExportSpecifierInfo";
-import {getNonTypeIdentifiers} from "../util/getNonTypeIdentifiers";
-import isExportFrom from "../util/isExportFrom";
-import {removeMaybeImportAttributes} from "../util/removeMaybeImportAttributes";
-import shouldElideDefaultExport from "../util/shouldElideDefaultExport";
-
-import Transformer from "./Transformer";
+var _Transformer = require('./Transformer'); var _Transformer2 = _interopRequireDefault(_Transformer);
 
 /**
  * Class for editing import statements when we are keeping the code as ESM. We still need to remove
  * type-only imports in TypeScript and Flow.
  */
-export default class ESMImportTransformer extends Transformer {
+ class ESMImportTransformer extends _Transformer2.default {
   
   
   
@@ -39,23 +39,23 @@ export default class ESMImportTransformer extends Transformer {
     super();this.tokens = tokens;this.nameManager = nameManager;this.helperManager = helperManager;this.reactHotLoaderTransformer = reactHotLoaderTransformer;this.isTypeScriptTransformEnabled = isTypeScriptTransformEnabled;this.isFlowTransformEnabled = isFlowTransformEnabled;this.keepUnusedImports = keepUnusedImports;;
     this.nonTypeIdentifiers =
       isTypeScriptTransformEnabled && !keepUnusedImports
-        ? getNonTypeIdentifiers(tokens, options)
+        ? _getNonTypeIdentifiers.getNonTypeIdentifiers.call(void 0, tokens, options)
         : new Set();
     this.declarationInfo =
       isTypeScriptTransformEnabled && !keepUnusedImports
-        ? getDeclarationInfo(tokens)
-        : EMPTY_DECLARATION_INFO;
+        ? _getDeclarationInfo2.default.call(void 0, tokens)
+        : _getDeclarationInfo.EMPTY_DECLARATION_INFO;
     this.injectCreateRequireForImportRequire = Boolean(options.injectCreateRequireForImportRequire);
   }
 
   process() {
     // TypeScript `import foo = require('foo');` should always just be translated to plain require.
-    if (this.tokens.matches3(tt._import, tt.name, tt.eq)) {
+    if (this.tokens.matches3(_types.TokenType._import, _types.TokenType.name, _types.TokenType.eq)) {
       return this.processImportEquals();
     }
     if (
-      this.tokens.matches4(tt._import, tt.name, tt.name, tt.eq) &&
-      this.tokens.matchesContextualAtIndex(this.tokens.currentIndex() + 1, ContextualKeyword._type)
+      this.tokens.matches4(_types.TokenType._import, _types.TokenType.name, _types.TokenType.name, _types.TokenType.eq) &&
+      this.tokens.matchesContextualAtIndex(this.tokens.currentIndex() + 1, _keywords.ContextualKeyword._type)
     ) {
       // import type T = require('T')
       this.tokens.removeInitialToken();
@@ -65,13 +65,13 @@ export default class ESMImportTransformer extends Transformer {
       }
       return true;
     }
-    if (this.tokens.matches2(tt._export, tt.eq)) {
+    if (this.tokens.matches2(_types.TokenType._export, _types.TokenType.eq)) {
       this.tokens.replaceToken("module.exports");
       return true;
     }
     if (
-      this.tokens.matches5(tt._export, tt._import, tt.name, tt.name, tt.eq) &&
-      this.tokens.matchesContextualAtIndex(this.tokens.currentIndex() + 2, ContextualKeyword._type)
+      this.tokens.matches5(_types.TokenType._export, _types.TokenType._import, _types.TokenType.name, _types.TokenType.name, _types.TokenType.eq) &&
+      this.tokens.matchesContextualAtIndex(this.tokens.currentIndex() + 2, _keywords.ContextualKeyword._type)
     ) {
       // export import type T = require('T')
       this.tokens.removeInitialToken();
@@ -81,18 +81,18 @@ export default class ESMImportTransformer extends Transformer {
       }
       return true;
     }
-    if (this.tokens.matches1(tt._import)) {
+    if (this.tokens.matches1(_types.TokenType._import)) {
       return this.processImport();
     }
-    if (this.tokens.matches2(tt._export, tt._default)) {
+    if (this.tokens.matches2(_types.TokenType._export, _types.TokenType._default)) {
       return this.processExportDefault();
     }
-    if (this.tokens.matches2(tt._export, tt.braceL)) {
+    if (this.tokens.matches2(_types.TokenType._export, _types.TokenType.braceL)) {
       return this.processNamedExports();
     }
     if (
-      this.tokens.matches2(tt._export, tt.name) &&
-      this.tokens.matchesContextualAtIndex(this.tokens.currentIndex() + 1, ContextualKeyword._type)
+      this.tokens.matches2(_types.TokenType._export, _types.TokenType.name) &&
+      this.tokens.matchesContextualAtIndex(this.tokens.currentIndex() + 1, _keywords.ContextualKeyword._type)
     ) {
       // export type {a};
       // export type {a as b};
@@ -101,15 +101,15 @@ export default class ESMImportTransformer extends Transformer {
       // export type * as ns from './b';
       this.tokens.removeInitialToken();
       this.tokens.removeToken();
-      if (this.tokens.matches1(tt.braceL)) {
-        while (!this.tokens.matches1(tt.braceR)) {
+      if (this.tokens.matches1(_types.TokenType.braceL)) {
+        while (!this.tokens.matches1(_types.TokenType.braceR)) {
           this.tokens.removeToken();
         }
         this.tokens.removeToken();
       } else {
         // *
         this.tokens.removeToken();
-        if (this.tokens.matches1(tt._as)) {
+        if (this.tokens.matches1(_types.TokenType._as)) {
           // as
           this.tokens.removeToken();
           // ns
@@ -118,12 +118,12 @@ export default class ESMImportTransformer extends Transformer {
       }
       // Remove type re-export `... } from './T'`
       if (
-        this.tokens.matchesContextual(ContextualKeyword._from) &&
-        this.tokens.matches1AtIndex(this.tokens.currentIndex() + 1, tt.string)
+        this.tokens.matchesContextual(_keywords.ContextualKeyword._from) &&
+        this.tokens.matches1AtIndex(this.tokens.currentIndex() + 1, _types.TokenType.string)
       ) {
         this.tokens.removeToken();
         this.tokens.removeToken();
-        removeMaybeImportAttributes(this.tokens);
+        _removeMaybeImportAttributes.removeMaybeImportAttributes.call(void 0, this.tokens);
       }
       return true;
     }
@@ -134,7 +134,7 @@ export default class ESMImportTransformer extends Transformer {
     const importName = this.tokens.identifierNameAtIndex(this.tokens.currentIndex() + 1);
     if (this.shouldAutomaticallyElideImportedName(importName)) {
       // If this name is only used as a type, elide the whole import.
-      elideImportEquals(this.tokens);
+      _elideImportEquals2.default.call(void 0, this.tokens);
     } else if (this.injectCreateRequireForImportRequire) {
       // We're using require in an environment (Node ESM) that doesn't provide
       // it as a global, so generate a helper to import it.
@@ -154,7 +154,7 @@ export default class ESMImportTransformer extends Transformer {
   }
 
    processImport() {
-    if (this.tokens.matches2(tt._import, tt.parenL)) {
+    if (this.tokens.matches2(_types.TokenType._import, _types.TokenType.parenL)) {
       // Dynamic imports don't need to be transformed.
       return false;
     }
@@ -163,12 +163,12 @@ export default class ESMImportTransformer extends Transformer {
     const allImportsRemoved = this.removeImportTypeBindings();
     if (allImportsRemoved) {
       this.tokens.restoreToSnapshot(snapshot);
-      while (!this.tokens.matches1(tt.string)) {
+      while (!this.tokens.matches1(_types.TokenType.string)) {
         this.tokens.removeToken();
       }
       this.tokens.removeToken();
-      removeMaybeImportAttributes(this.tokens);
-      if (this.tokens.matches1(tt.semi)) {
+      _removeMaybeImportAttributes.removeMaybeImportAttributes.call(void 0, this.tokens);
+      if (this.tokens.matches1(_types.TokenType.semi)) {
         this.tokens.removeToken();
       }
     }
@@ -182,17 +182,17 @@ export default class ESMImportTransformer extends Transformer {
    * of the replacement operation, so we can return early here.
    */
    removeImportTypeBindings() {
-    this.tokens.copyExpectedToken(tt._import);
+    this.tokens.copyExpectedToken(_types.TokenType._import);
     if (
-      this.tokens.matchesContextual(ContextualKeyword._type) &&
-      !this.tokens.matches1AtIndex(this.tokens.currentIndex() + 1, tt.comma) &&
-      !this.tokens.matchesContextualAtIndex(this.tokens.currentIndex() + 1, ContextualKeyword._from)
+      this.tokens.matchesContextual(_keywords.ContextualKeyword._type) &&
+      !this.tokens.matches1AtIndex(this.tokens.currentIndex() + 1, _types.TokenType.comma) &&
+      !this.tokens.matchesContextualAtIndex(this.tokens.currentIndex() + 1, _keywords.ContextualKeyword._from)
     ) {
       // This is an "import type" statement, so exit early.
       return true;
     }
 
-    if (this.tokens.matches1(tt.string)) {
+    if (this.tokens.matches1(_types.TokenType.string)) {
       // This is a bare import, so we should proceed with the import.
       this.tokens.copyToken();
       return false;
@@ -200,8 +200,8 @@ export default class ESMImportTransformer extends Transformer {
 
     // Skip the "module" token in import reflection.
     if (
-      this.tokens.matchesContextual(ContextualKeyword._module) &&
-      this.tokens.matchesContextualAtIndex(this.tokens.currentIndex() + 2, ContextualKeyword._from)
+      this.tokens.matchesContextual(_keywords.ContextualKeyword._module) &&
+      this.tokens.matchesContextualAtIndex(this.tokens.currentIndex() + 2, _keywords.ContextualKeyword._from)
     ) {
       this.tokens.copyToken();
     }
@@ -211,16 +211,16 @@ export default class ESMImportTransformer extends Transformer {
     let needsComma = false;
 
     // Handle default import.
-    if (this.tokens.matches1(tt.name)) {
+    if (this.tokens.matches1(_types.TokenType.name)) {
       if (this.shouldAutomaticallyElideImportedName(this.tokens.identifierName())) {
         this.tokens.removeToken();
-        if (this.tokens.matches1(tt.comma)) {
+        if (this.tokens.matches1(_types.TokenType.comma)) {
           this.tokens.removeToken();
         }
       } else {
         foundNonTypeImport = true;
         this.tokens.copyToken();
-        if (this.tokens.matches1(tt.comma)) {
+        if (this.tokens.matches1(_types.TokenType.comma)) {
           // We're in a statement like:
           // import A, * as B from './A';
           // or
@@ -235,7 +235,7 @@ export default class ESMImportTransformer extends Transformer {
       }
     }
 
-    if (this.tokens.matches1(tt.star)) {
+    if (this.tokens.matches1(_types.TokenType.star)) {
       if (this.shouldAutomaticallyElideImportedName(this.tokens.identifierNameAtRelativeIndex(2))) {
         this.tokens.removeToken();
         this.tokens.removeToken();
@@ -245,18 +245,18 @@ export default class ESMImportTransformer extends Transformer {
           this.tokens.appendCode(",");
         }
         foundNonTypeImport = true;
-        this.tokens.copyExpectedToken(tt.star);
-        this.tokens.copyExpectedToken(tt.name);
-        this.tokens.copyExpectedToken(tt.name);
+        this.tokens.copyExpectedToken(_types.TokenType.star);
+        this.tokens.copyExpectedToken(_types.TokenType.name);
+        this.tokens.copyExpectedToken(_types.TokenType.name);
       }
-    } else if (this.tokens.matches1(tt.braceL)) {
+    } else if (this.tokens.matches1(_types.TokenType.braceL)) {
       if (needsComma) {
         this.tokens.appendCode(",");
       }
       this.tokens.copyToken();
-      while (!this.tokens.matches1(tt.braceR)) {
+      while (!this.tokens.matches1(_types.TokenType.braceR)) {
         foundAnyNamedImport = true;
-        const specifierInfo = getImportExportSpecifierInfo(this.tokens);
+        const specifierInfo = _getImportExportSpecifierInfo2.default.call(void 0, this.tokens);
         if (
           specifierInfo.isType ||
           this.shouldAutomaticallyElideImportedName(specifierInfo.rightName)
@@ -264,7 +264,7 @@ export default class ESMImportTransformer extends Transformer {
           while (this.tokens.currentIndex() < specifierInfo.endIndex) {
             this.tokens.removeToken();
           }
-          if (this.tokens.matches1(tt.comma)) {
+          if (this.tokens.matches1(_types.TokenType.comma)) {
             this.tokens.removeToken();
           }
         } else {
@@ -272,12 +272,12 @@ export default class ESMImportTransformer extends Transformer {
           while (this.tokens.currentIndex() < specifierInfo.endIndex) {
             this.tokens.copyToken();
           }
-          if (this.tokens.matches1(tt.comma)) {
+          if (this.tokens.matches1(_types.TokenType.comma)) {
             this.tokens.copyToken();
           }
         }
       }
-      this.tokens.copyExpectedToken(tt.braceR);
+      this.tokens.copyExpectedToken(_types.TokenType.braceR);
     }
 
     if (this.keepUnusedImports) {
@@ -303,7 +303,7 @@ export default class ESMImportTransformer extends Transformer {
 
    processExportDefault() {
     if (
-      shouldElideDefaultExport(
+      _shouldElideDefaultExport2.default.call(void 0, 
         this.isTypeScriptTransformEnabled,
         this.keepUnusedImports,
         this.tokens,
@@ -320,15 +320,15 @@ export default class ESMImportTransformer extends Transformer {
     }
 
     const alreadyHasName =
-      this.tokens.matches4(tt._export, tt._default, tt._function, tt.name) ||
+      this.tokens.matches4(_types.TokenType._export, _types.TokenType._default, _types.TokenType._function, _types.TokenType.name) ||
       // export default async function
-      (this.tokens.matches5(tt._export, tt._default, tt.name, tt._function, tt.name) &&
+      (this.tokens.matches5(_types.TokenType._export, _types.TokenType._default, _types.TokenType.name, _types.TokenType._function, _types.TokenType.name) &&
         this.tokens.matchesContextualAtIndex(
           this.tokens.currentIndex() + 2,
-          ContextualKeyword._async,
+          _keywords.ContextualKeyword._async,
         )) ||
-      this.tokens.matches4(tt._export, tt._default, tt._class, tt.name) ||
-      this.tokens.matches5(tt._export, tt._default, tt._abstract, tt._class, tt.name);
+      this.tokens.matches4(_types.TokenType._export, _types.TokenType._default, _types.TokenType._class, _types.TokenType.name) ||
+      this.tokens.matches5(_types.TokenType._export, _types.TokenType._default, _types.TokenType._abstract, _types.TokenType._class, _types.TokenType.name);
 
     if (!alreadyHasName && this.reactHotLoaderTransformer) {
       // This is a plain "export default E" statement and we need to assign E to a variable.
@@ -357,13 +357,13 @@ export default class ESMImportTransformer extends Transformer {
     if (!this.isTypeScriptTransformEnabled) {
       return false;
     }
-    this.tokens.copyExpectedToken(tt._export);
-    this.tokens.copyExpectedToken(tt.braceL);
+    this.tokens.copyExpectedToken(_types.TokenType._export);
+    this.tokens.copyExpectedToken(_types.TokenType.braceL);
 
-    const isReExport = isExportFrom(this.tokens);
+    const isReExport = _isExportFrom2.default.call(void 0, this.tokens);
     let foundNonTypeExport = false;
-    while (!this.tokens.matches1(tt.braceR)) {
-      const specifierInfo = getImportExportSpecifierInfo(this.tokens);
+    while (!this.tokens.matches1(_types.TokenType.braceR)) {
+      const specifierInfo = _getImportExportSpecifierInfo2.default.call(void 0, this.tokens);
       if (
         specifierInfo.isType ||
         (!isReExport && this.shouldElideExportedName(specifierInfo.leftName))
@@ -372,7 +372,7 @@ export default class ESMImportTransformer extends Transformer {
         while (this.tokens.currentIndex() < specifierInfo.endIndex) {
           this.tokens.removeToken();
         }
-        if (this.tokens.matches1(tt.comma)) {
+        if (this.tokens.matches1(_types.TokenType.comma)) {
           this.tokens.removeToken();
         }
       } else {
@@ -381,19 +381,19 @@ export default class ESMImportTransformer extends Transformer {
         while (this.tokens.currentIndex() < specifierInfo.endIndex) {
           this.tokens.copyToken();
         }
-        if (this.tokens.matches1(tt.comma)) {
+        if (this.tokens.matches1(_types.TokenType.comma)) {
           this.tokens.copyToken();
         }
       }
     }
-    this.tokens.copyExpectedToken(tt.braceR);
+    this.tokens.copyExpectedToken(_types.TokenType.braceR);
 
     if (!this.keepUnusedImports && isReExport && !foundNonTypeExport) {
       // This is a type-only re-export, so skip evaluating the other module. Technically this
       // leaves the statement as `export {}`, but that's ok since that's a no-op.
       this.tokens.removeToken();
       this.tokens.removeToken();
-      removeMaybeImportAttributes(this.tokens);
+      _removeMaybeImportAttributes.removeMaybeImportAttributes.call(void 0, this.tokens);
     }
 
     return true;
@@ -412,4 +412,4 @@ export default class ESMImportTransformer extends Transformer {
       !this.declarationInfo.valueDeclarations.has(name)
     );
   }
-}
+} exports.default = ESMImportTransformer;

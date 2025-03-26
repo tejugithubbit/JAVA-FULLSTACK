@@ -1,8 +1,8 @@
+"use strict";Object.defineProperty(exports, "__esModule", {value: true});
+var _keywords = require('./keywords');
+var _types = require('./types');
 
-import {ContextualKeyword} from "./keywords";
-import { TokenType as tt} from "./types";
-
-export class Scope {
+ class Scope {
   
   
   
@@ -12,9 +12,9 @@ export class Scope {
     this.endTokenIndex = endTokenIndex;
     this.isFunctionScope = isFunctionScope;
   }
-}
+} exports.Scope = Scope;
 
-export class StateSnapshot {
+ class StateSnapshot {
   constructor(
      potentialArrowAt,
      noAnonFunctionType,
@@ -30,9 +30,9 @@ export class StateSnapshot {
      scopeDepth,
      error,
   ) {;this.potentialArrowAt = potentialArrowAt;this.noAnonFunctionType = noAnonFunctionType;this.inDisallowConditionalTypesContext = inDisallowConditionalTypesContext;this.tokensLength = tokensLength;this.scopesLength = scopesLength;this.pos = pos;this.type = type;this.contextualKeyword = contextualKeyword;this.start = start;this.end = end;this.isType = isType;this.scopeDepth = scopeDepth;this.error = error;}
-}
+} exports.StateSnapshot = StateSnapshot;
 
-export default class State {constructor() { State.prototype.__init.call(this);State.prototype.__init2.call(this);State.prototype.__init3.call(this);State.prototype.__init4.call(this);State.prototype.__init5.call(this);State.prototype.__init6.call(this);State.prototype.__init7.call(this);State.prototype.__init8.call(this);State.prototype.__init9.call(this);State.prototype.__init10.call(this);State.prototype.__init11.call(this);State.prototype.__init12.call(this);State.prototype.__init13.call(this); }
+ class State {constructor() { State.prototype.__init.call(this);State.prototype.__init2.call(this);State.prototype.__init3.call(this);State.prototype.__init4.call(this);State.prototype.__init5.call(this);State.prototype.__init6.call(this);State.prototype.__init7.call(this);State.prototype.__init8.call(this);State.prototype.__init9.call(this);State.prototype.__init10.call(this);State.prototype.__init11.call(this);State.prototype.__init12.call(this);State.prototype.__init13.call(this); }
   // Used to signify the start of a potential arrow function
   __init() {this.potentialArrowAt = -1}
 
@@ -52,8 +52,8 @@ export default class State {constructor() { State.prototype.__init.call(this);St
   __init6() {this.pos = 0}
 
   // Information about the current token.
-  __init7() {this.type = tt.eof}
-  __init8() {this.contextualKeyword = ContextualKeyword.NONE}
+  __init7() {this.type = _types.TokenType.eof}
+  __init8() {this.contextualKeyword = _keywords.ContextualKeyword.NONE}
   __init9() {this.start = 0}
   __init10() {this.end = 0}
 
@@ -103,4 +103,4 @@ export default class State {constructor() { State.prototype.__init.call(this);St
     this.scopeDepth = snapshot.scopeDepth;
     this.error = snapshot.error;
   }
-}
+} exports.default = State;

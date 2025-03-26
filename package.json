@@ -1,47 +1,53 @@
 {
-	"name": "strip-json-comments",
-	"version": "3.1.1",
-	"description": "Strip comments from JSON. Lets you use comments in your JSON files!",
+	"name": "supports-color",
+	"version": "5.5.0",
+	"description": "Detect whether a terminal supports color",
 	"license": "MIT",
-	"repository": "sindresorhus/strip-json-comments",
-	"funding": "https://github.com/sponsors/sindresorhus",
+	"repository": "chalk/supports-color",
 	"author": {
 		"name": "Sindre Sorhus",
 		"email": "sindresorhus@gmail.com",
-		"url": "https://sindresorhus.com"
+		"url": "sindresorhus.com"
 	},
 	"engines": {
-		"node": ">=8"
+		"node": ">=4"
 	},
 	"scripts": {
-		"test": "xo && ava && tsd",
-		"bench": "matcha benchmark.js"
+		"test": "xo && ava"
 	},
 	"files": [
 		"index.js",
-		"index.d.ts"
+		"browser.js"
 	],
 	"keywords": [
-		"json",
-		"strip",
-		"comments",
-		"remove",
-		"delete",
-		"trim",
-		"multiline",
-		"parse",
-		"config",
-		"configuration",
-		"settings",
-		"util",
-		"env",
-		"environment",
-		"jsonc"
+		"color",
+		"colour",
+		"colors",
+		"terminal",
+		"console",
+		"cli",
+		"ansi",
+		"styles",
+		"tty",
+		"rgb",
+		"256",
+		"shell",
+		"xterm",
+		"command-line",
+		"support",
+		"supports",
+		"capability",
+		"detect",
+		"truecolor",
+		"16m"
 	],
+	"dependencies": {
+		"has-flag": "^3.0.0"
+	},
 	"devDependencies": {
-		"ava": "^1.4.1",
-		"matcha": "^0.7.0",
-		"tsd": "^0.7.2",
-		"xo": "^0.24.0"
-	}
+		"ava": "^0.25.0",
+		"import-fresh": "^2.0.0",
+		"xo": "^0.20.0"
+	},
+	"browser": "browser.js"
 }

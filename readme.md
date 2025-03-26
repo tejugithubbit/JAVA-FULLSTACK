@@ -1,78 +1,66 @@
-# strip-json-comments [![Build Status](https://travis-ci.com/sindresorhus/strip-json-comments.svg?branch=master)](https://travis-ci.com/github/sindresorhus/strip-json-comments)
+# supports-color [![Build Status](https://travis-ci.org/chalk/supports-color.svg?branch=master)](https://travis-ci.org/chalk/supports-color)
 
-> Strip comments from JSON. Lets you use comments in your JSON files!
+> Detect whether a terminal supports color
 
-This is now possible:
-
-```js
-{
-	// Rainbows
-	"unicorn": /* ❤ */ "cake"
-}
-```
-
-It will replace single-line comments `//` and multi-line comments `/**/` with whitespace. This allows JSON error positions to remain as close as possible to the original source.
-
-Also available as a [Gulp](https://github.com/sindresorhus/gulp-strip-json-comments)/[Grunt](https://github.com/sindresorhus/grunt-strip-json-comments)/[Broccoli](https://github.com/sindresorhus/broccoli-strip-json-comments) plugin.
 
 ## Install
 
 ```
-$ npm install strip-json-comments
+$ npm install supports-color
 ```
+
 
 ## Usage
 
 ```js
-const json = `{
-	// Rainbows
-	"unicorn": /* ❤ */ "cake"
-}`;
+const supportsColor = require('supports-color');
 
-JSON.parse(stripJsonComments(json));
-//=> {unicorn: 'cake'}
+if (supportsColor.stdout) {
+	console.log('Terminal stdout supports color');
+}
+
+if (supportsColor.stdout.has256) {
+	console.log('Terminal stdout supports 256 colors');
+}
+
+if (supportsColor.stderr.has16m) {
+	console.log('Terminal stderr supports 16 million colors (truecolor)');
+}
 ```
+
 
 ## API
 
-### stripJsonComments(jsonString, options?)
+Returns an `Object` with a `stdout` and `stderr` property for testing either streams. Each property is an `Object`, or `false` if color is not supported.
 
-#### jsonString
+The `stdout`/`stderr` objects specifies a level of support for color through a `.level` property and a corresponding flag:
 
-Type: `string`
+- `.level = 1` and `.hasBasic = true`: Basic color support (16 colors)
+- `.level = 2` and `.has256 = true`: 256 color support
+- `.level = 3` and `.has16m = true`: Truecolor support (16 million colors)
 
-Accepts a string with JSON and returns a string without comments.
 
-#### options
+## Info
 
-Type: `object`
+It obeys the `--color` and `--no-color` CLI flags.
 
-##### whitespace
+Can be overridden by the user with the flags `--color` and `--no-color`. For situations where using `--color` is not possible, add the environment variable `FORCE_COLOR=1` to forcefully enable color or `FORCE_COLOR=0` to forcefully disable. The use of `FORCE_COLOR` overrides all other color support checks.
 
-Type: `boolean`\
-Default: `true`
+Explicit 256/Truecolor mode can be enabled using the `--color=256` and `--color=16m` flags, respectively.
 
-Replace comments with whitespace instead of stripping them entirely.
-
-## Benchmark
-
-```
-$ npm run bench
-```
 
 ## Related
 
-- [strip-json-comments-cli](https://github.com/sindresorhus/strip-json-comments-cli) - CLI for this module
-- [strip-css-comments](https://github.com/sindresorhus/strip-css-comments) - Strip comments from CSS
+- [supports-color-cli](https://github.com/chalk/supports-color-cli) - CLI for this module
+- [chalk](https://github.com/chalk/chalk) - Terminal string styling done right
 
----
 
-<div align="center">
-	<b>
-		<a href="https://tidelift.com/subscription/pkg/npm-strip-json-comments?utm_source=npm-strip-json-comments&utm_medium=referral&utm_campaign=readme">Get professional support for this package with a Tidelift subscription</a>
-	</b>
-	<br>
-	<sub>
-		Tidelift helps make open source sustainable for maintainers while giving companies<br>assurances about security, maintenance, and licensing for their dependencies.
-	</sub>
-</div>
+## Maintainers
+
+- [Sindre Sorhus](https://github.com/sindresorhus)
+- [Josh Junon](https://github.com/qix-)
+
+
+## License
+
+MIT

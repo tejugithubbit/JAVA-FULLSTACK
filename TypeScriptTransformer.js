@@ -1,11 +1,11 @@
+"use strict";Object.defineProperty(exports, "__esModule", {value: true}); function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _types = require('../parser/tokenizer/types');
 
-import {TokenType as tt} from "../parser/tokenizer/types";
+var _isIdentifier = require('../util/isIdentifier'); var _isIdentifier2 = _interopRequireDefault(_isIdentifier);
 
-import isIdentifier from "../util/isIdentifier";
+var _Transformer = require('./Transformer'); var _Transformer2 = _interopRequireDefault(_Transformer);
 
-import Transformer from "./Transformer";
-
-export default class TypeScriptTransformer extends Transformer {
+ class TypeScriptTransformer extends _Transformer2.default {
   constructor(
      rootTransformer,
      tokens,
@@ -23,24 +23,24 @@ export default class TypeScriptTransformer extends Transformer {
       return true;
     }
     if (
-      this.tokens.matches1(tt._public) ||
-      this.tokens.matches1(tt._protected) ||
-      this.tokens.matches1(tt._private) ||
-      this.tokens.matches1(tt._abstract) ||
-      this.tokens.matches1(tt._readonly) ||
-      this.tokens.matches1(tt._override) ||
-      this.tokens.matches1(tt.nonNullAssertion)
+      this.tokens.matches1(_types.TokenType._public) ||
+      this.tokens.matches1(_types.TokenType._protected) ||
+      this.tokens.matches1(_types.TokenType._private) ||
+      this.tokens.matches1(_types.TokenType._abstract) ||
+      this.tokens.matches1(_types.TokenType._readonly) ||
+      this.tokens.matches1(_types.TokenType._override) ||
+      this.tokens.matches1(_types.TokenType.nonNullAssertion)
     ) {
       this.tokens.removeInitialToken();
       return true;
     }
-    if (this.tokens.matches1(tt._enum) || this.tokens.matches2(tt._const, tt._enum)) {
+    if (this.tokens.matches1(_types.TokenType._enum) || this.tokens.matches2(_types.TokenType._const, _types.TokenType._enum)) {
       this.processEnum();
       return true;
     }
     if (
-      this.tokens.matches2(tt._export, tt._enum) ||
-      this.tokens.matches3(tt._export, tt._const, tt._enum)
+      this.tokens.matches2(_types.TokenType._export, _types.TokenType._enum) ||
+      this.tokens.matches3(_types.TokenType._export, _types.TokenType._const, _types.TokenType._enum)
     ) {
       this.processEnum(true);
       return true;
@@ -51,7 +51,7 @@ export default class TypeScriptTransformer extends Transformer {
   processEnum(isExport = false) {
     // We might have "export const enum", so just remove all relevant tokens.
     this.tokens.removeInitialToken();
-    while (this.tokens.matches1(tt._const) || this.tokens.matches1(tt._enum)) {
+    while (this.tokens.matches1(_types.TokenType._const) || this.tokens.matches1(_types.TokenType._enum)) {
       this.tokens.removeToken();
     }
     const enumName = this.tokens.identifierName();
@@ -60,9 +60,9 @@ export default class TypeScriptTransformer extends Transformer {
       this.tokens.appendCode("export ");
     }
     this.tokens.appendCode(`var ${enumName}; (function (${enumName})`);
-    this.tokens.copyExpectedToken(tt.braceL);
+    this.tokens.copyExpectedToken(_types.TokenType.braceL);
     this.processEnumBody(enumName);
-    this.tokens.copyExpectedToken(tt.braceR);
+    this.tokens.copyExpectedToken(_types.TokenType.braceR);
     if (isExport && this.isImportsTransformEnabled) {
       this.tokens.appendCode(`)(${enumName} || (exports.${enumName} = ${enumName} = {}));`);
     } else {
@@ -82,18 +82,18 @@ export default class TypeScriptTransformer extends Transformer {
     // enum member.
     let previousValueCode = null;
     while (true) {
-      if (this.tokens.matches1(tt.braceR)) {
+      if (this.tokens.matches1(_types.TokenType.braceR)) {
         break;
       }
       const {nameStringCode, variableName} = this.extractEnumKeyInfo(this.tokens.currentToken());
       this.tokens.removeInitialToken();
 
       if (
-        this.tokens.matches3(tt.eq, tt.string, tt.comma) ||
-        this.tokens.matches3(tt.eq, tt.string, tt.braceR)
+        this.tokens.matches3(_types.TokenType.eq, _types.TokenType.string, _types.TokenType.comma) ||
+        this.tokens.matches3(_types.TokenType.eq, _types.TokenType.string, _types.TokenType.braceR)
       ) {
         this.processStringLiteralEnumMember(enumName, nameStringCode, variableName);
-      } else if (this.tokens.matches1(tt.eq)) {
+      } else if (this.tokens.matches1(_types.TokenType.eq)) {
         this.processExplicitValueEnumMember(enumName, nameStringCode, variableName);
       } else {
         this.processImplicitValueEnumMember(
@@ -103,7 +103,7 @@ export default class TypeScriptTransformer extends Transformer {
           previousValueCode,
         );
       }
-      if (this.tokens.matches1(tt.comma)) {
+      if (this.tokens.matches1(_types.TokenType.comma)) {
         this.tokens.removeToken();
       }
 
@@ -136,17 +136,17 @@ export default class TypeScriptTransformer extends Transformer {
    * variable declaration, and if null, we can't and shouldn't.
    */
   extractEnumKeyInfo(nameToken) {
-    if (nameToken.type === tt.name) {
+    if (nameToken.type === _types.TokenType.name) {
       const name = this.tokens.identifierNameForToken(nameToken);
       return {
         nameStringCode: `"${name}"`,
-        variableName: isIdentifier(name) ? name : null,
+        variableName: _isIdentifier2.default.call(void 0, name) ? name : null,
       };
-    } else if (nameToken.type === tt.string) {
+    } else if (nameToken.type === _types.TokenType.string) {
       const name = this.tokens.stringValueForToken(nameToken);
       return {
         nameStringCode: this.tokens.code.slice(nameToken.start, nameToken.end),
-        variableName: isIdentifier(name) ? name : null,
+        variableName: _isIdentifier2.default.call(void 0, name) ? name : null,
       };
     } else {
       throw new Error("Expected name or string at beginning of enum element.");
@@ -276,4 +276,4 @@ export default class TypeScriptTransformer extends Transformer {
       `${enumName}[${enumName}[${nameStringCode}] = ${valueCode}] = ${nameStringCode};`,
     );
   }
-}
+} exports.default = TypeScriptTransformer;

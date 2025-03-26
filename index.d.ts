@@ -1,36 +1,26 @@
-declare namespace stripJsonComments {
-	interface Options {
-		/**
-		Replace comments with whitespace instead of stripping them entirely.
-
-		@default true
-		*/
-		readonly whitespace?: boolean;
-	}
+import CJSImportProcessor from "./CJSImportProcessor";
+import { type RawSourceMap } from "./computeSourceMap";
+import { HelperManager } from "./HelperManager";
+import NameManager from "./NameManager";
+import type { Options, SourceMapOptions, Transform } from "./Options";
+import type { Scope } from "./parser/tokenizer/state";
+import TokenProcessor from "./TokenProcessor";
+export interface TransformResult {
+    code: string;
+    sourceMap?: RawSourceMap;
 }
-
+export interface SucraseContext {
+    tokenProcessor: TokenProcessor;
+    scopes: Array<Scope>;
+    nameManager: NameManager;
+    importProcessor: CJSImportProcessor | null;
+    helperManager: HelperManager;
+}
+export type { Options, SourceMapOptions, Transform };
+export declare function getVersion(): string;
+export declare function transform(code: string, options: Options): TransformResult;
 /**
-Strip comments from JSON. Lets you use comments in your JSON files!
-
-It will replace single-line comments `//` and multi-line comments `/**\/` with whitespace. This allows JSON error positions to remain as close as possible to the original source.
-
-@param jsonString - Accepts a string with JSON.
-@returns A JSON string without comments.
-
-@example
-```
-const json = `{
-	// Rainbows
-	"unicorn": "cake"
-}`;
-
-JSON.parse(stripJsonComments(json));
-//=> {unicorn: 'cake'}
-```
-*/
-declare function stripJsonComments(
-	jsonString: string,
-	options?: stripJsonComments.Options
-): string;
-
-export = stripJsonComments;
+ * Return a string representation of the sucrase tokens, mostly useful for
+ * diagnostic purposes.
+ */
+export declare function getFormattedTokens(code: string, options: Options): string;

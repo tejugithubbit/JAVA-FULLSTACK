@@ -1,7 +1,7 @@
-import {TokenType as tt} from "../parser/tokenizer/types";
+"use strict";Object.defineProperty(exports, "__esModule", {value: true});var _types = require('../parser/tokenizer/types');
 
 
- 
+
 
 
 
@@ -38,7 +38,7 @@ import {TokenType as tt} from "../parser/tokenizer/types";
  * potentially be simplified and/or pushed to the call sites to avoid the object
  * allocation.
  */
-export default function getImportExportSpecifierInfo(
+ function getImportExportSpecifierInfo(
   tokens,
   index = tokens.currentIndex(),
 ) {
@@ -84,9 +84,9 @@ export default function getImportExportSpecifierInfo(
     };
   }
   throw new Error(`Unexpected import/export specifier at ${index}`);
-}
+} exports.default = getImportExportSpecifierInfo;
 
 function isSpecifierEnd(tokens, index) {
   const token = tokens.tokens[index];
-  return token.type === tt.braceR || token.type === tt.comma;
+  return token.type === _types.TokenType.braceR || token.type === _types.TokenType.comma;
 }

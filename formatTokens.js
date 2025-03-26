@@ -1,9 +1,9 @@
-import LinesAndColumns from "lines-and-columns";
+"use strict";Object.defineProperty(exports, "__esModule", {value: true}); function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }var _linesandcolumns = require('lines-and-columns'); var _linesandcolumns2 = _interopRequireDefault(_linesandcolumns);
 
 
-import {formatTokenType} from "../parser/tokenizer/types";
+var _types = require('../parser/tokenizer/types');
 
-export default function formatTokens(code, tokens) {
+ function formatTokens(code, tokens) {
   if (tokens.length === 0) {
     return "";
   }
@@ -15,7 +15,7 @@ export default function formatTokens(code, tokens) {
 
   const headings = ["Location", "Label", "Raw", ...tokenKeys, ...typeKeys];
 
-  const lines = new LinesAndColumns(code);
+  const lines = new (0, _linesandcolumns2.default)(code);
   const rows = [headings, ...tokens.map(getTokenComponents)];
   const padding = headings.map(() => 0);
   for (const components of rows) {
@@ -31,7 +31,7 @@ export default function formatTokens(code, tokens) {
     const raw = code.slice(token.start, token.end);
     return [
       formatRange(token.start, token.end),
-      formatTokenType(token.type),
+      _types.formatTokenType.call(void 0, token.type),
       truncate(String(raw), 14),
       // @ts-ignore: Intentional dynamic access by key.
       ...tokenKeys.map((key) => formatValue(token[key], key)),
@@ -63,7 +63,7 @@ export default function formatTokens(code, tokens) {
       return `${location.line + 1}:${location.column + 1}`;
     }
   }
-}
+} exports.default = formatTokens;
 
 function truncate(s, length) {
   if (s.length > length) {

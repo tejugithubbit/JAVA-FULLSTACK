@@ -1,41 +1,41 @@
-import State from "../tokenizer/state";
-import {charCodes} from "../util/charcodes";
+"use strict";Object.defineProperty(exports, "__esModule", {value: true}); function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }var _state = require('../tokenizer/state'); var _state2 = _interopRequireDefault(_state);
+var _charcodes = require('../util/charcodes');
 
-export let isJSXEnabled;
-export let isTypeScriptEnabled;
-export let isFlowEnabled;
-export let state;
-export let input;
-export let nextContextId;
+ exports.isJSXEnabled;
+ exports.isTypeScriptEnabled;
+ exports.isFlowEnabled;
+ exports.state;
+ exports.input;
+ exports.nextContextId;
 
-export function getNextContextId() {
-  return nextContextId++;
-}
+ function getNextContextId() {
+  return exports.nextContextId++;
+} exports.getNextContextId = getNextContextId;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function augmentError(error) {
+ function augmentError(error) {
   if ("pos" in error) {
     const loc = locationForIndex(error.pos);
     error.message += ` (${loc.line}:${loc.column})`;
     error.loc = loc;
   }
   return error;
-}
+} exports.augmentError = augmentError;
 
-export class Loc {
+ class Loc {
   
   
   constructor(line, column) {
     this.line = line;
     this.column = column;
   }
-}
+} exports.Loc = Loc;
 
-export function locationForIndex(pos) {
+ function locationForIndex(pos) {
   let line = 1;
   let column = 1;
   for (let i = 0; i < pos; i++) {
-    if (input.charCodeAt(i) === charCodes.lineFeed) {
+    if (exports.input.charCodeAt(i) === _charcodes.charCodes.lineFeed) {
       line++;
       column = 1;
     } else {
@@ -43,18 +43,18 @@ export function locationForIndex(pos) {
     }
   }
   return new Loc(line, column);
-}
+} exports.locationForIndex = locationForIndex;
 
-export function initParser(
+ function initParser(
   inputCode,
   isJSXEnabledArg,
   isTypeScriptEnabledArg,
   isFlowEnabledArg,
 ) {
-  input = inputCode;
-  state = new State();
-  nextContextId = 1;
-  isJSXEnabled = isJSXEnabledArg;
-  isTypeScriptEnabled = isTypeScriptEnabledArg;
-  isFlowEnabled = isFlowEnabledArg;
-}
+  exports.input = inputCode;
+  exports.state = new (0, _state2.default)();
+  exports.nextContextId = 1;
+  exports.isJSXEnabled = isJSXEnabledArg;
+  exports.isTypeScriptEnabled = isTypeScriptEnabledArg;
+  exports.isFlowEnabled = isFlowEnabledArg;
+} exports.initParser = initParser;

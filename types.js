@@ -1,9 +1,9 @@
-// Generated file, do not edit! Run "yarn generate" to re-generate this file.
+"use strict";Object.defineProperty(exports, "__esModule", {value: true});// Generated file, do not edit! Run "yarn generate" to re-generate this file.
 /* istanbul ignore file */
 /**
  * Enum of all token types, with bit fields to signify meaningful properties.
  */
-export var TokenType; (function (TokenType) {
+var TokenType; (function (TokenType) {
   // Precedence 0 means not an operator; otherwise it is a positive number up to 12.
   const PRECEDENCE_MASK = 0xf; TokenType[TokenType["PRECEDENCE_MASK"] = PRECEDENCE_MASK] = "PRECEDENCE_MASK";
   const IS_KEYWORD = 1 << 4; TokenType[TokenType["IS_KEYWORD"] = IS_KEYWORD] = "IS_KEYWORD";
@@ -126,8 +126,8 @@ export var TokenType; (function (TokenType) {
   const _enum = 113168; TokenType[TokenType["_enum"] = _enum] = "_enum"; // enum keyword startsExpr
   const _type = 114192; TokenType[TokenType["_type"] = _type] = "_type"; // type keyword startsExpr
   const _implements = 115216; TokenType[TokenType["_implements"] = _implements] = "_implements"; // implements keyword startsExpr
-})(TokenType || (TokenType = {}));
-export function formatTokenType(tokenType) {
+})(TokenType || (exports.TokenType = TokenType = {}));
+ function formatTokenType(tokenType) {
   switch (tokenType) {
     case TokenType.num:
       return "num";
@@ -358,4 +358,4 @@ export function formatTokenType(tokenType) {
     default:
       return "";
   }
-}
+} exports.formatTokenType = formatTokenType;

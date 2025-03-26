@@ -1,4 +1,4 @@
-export var charCodes; (function (charCodes) {
+"use strict";Object.defineProperty(exports, "__esModule", {value: true});var charCodes; (function (charCodes) {
   const backSpace = 8; charCodes[charCodes["backSpace"] = backSpace] = "backSpace";
   const lineFeed = 10; charCodes[charCodes["lineFeed"] = lineFeed] = "lineFeed"; //  '\n'
   const tab = 9; charCodes[charCodes["tab"] = tab] = "tab"; //  '\t'
@@ -104,12 +104,12 @@ export var charCodes; (function (charCodes) {
   const oghamSpaceMark = 5760; charCodes[charCodes["oghamSpaceMark"] = oghamSpaceMark] = "oghamSpaceMark"; // ' '
   const lineSeparator = 8232; charCodes[charCodes["lineSeparator"] = lineSeparator] = "lineSeparator";
   const paragraphSeparator = 8233; charCodes[charCodes["paragraphSeparator"] = paragraphSeparator] = "paragraphSeparator";
-})(charCodes || (charCodes = {}));
+})(charCodes || (exports.charCodes = charCodes = {}));
 
-export function isDigit(code) {
+ function isDigit(code) {
   return (
     (code >= charCodes.digit0 && code <= charCodes.digit9) ||
     (code >= charCodes.lowercaseA && code <= charCodes.lowercaseF) ||
     (code >= charCodes.uppercaseA && code <= charCodes.uppercaseF)
   );
-}
+} exports.isDigit = isDigit;

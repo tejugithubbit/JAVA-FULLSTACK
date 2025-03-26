@@ -1,4 +1,4 @@
-/* eslint max-len: 0 */
+"use strict";Object.defineProperty(exports, "__esModule", {value: true});/* eslint max-len: 0 */
 
 // A recursive descent parser operates by defining functions for all
 // syntactic elements, and recursively calling those, each function
@@ -18,80 +18,80 @@
 //
 // [opp]: http://en.wikipedia.org/wiki/Operator-precedence_parser
 
-import {
-  flowParseArrow,
-  flowParseFunctionBodyAndFinish,
-  flowParseMaybeAssign,
-  flowParseSubscript,
-  flowParseSubscripts,
-  flowParseVariance,
-  flowStartParseAsyncArrowFromCallExpression,
-  flowStartParseNewArguments,
-  flowStartParseObjPropValue,
-} from "../plugins/flow";
-import {jsxParseElement} from "../plugins/jsx/index";
-import {typedParseConditional, typedParseParenItem} from "../plugins/types";
-import {
-  tsParseArrow,
-  tsParseFunctionBodyAndFinish,
-  tsParseMaybeAssign,
-  tsParseSubscript,
-  tsParseType,
-  tsParseTypeAssertion,
-  tsStartParseAsyncArrowFromCallExpression,
-  tsStartParseObjPropValue,
-} from "../plugins/typescript";
-import {
-  eat,
-  IdentifierRole,
-  lookaheadCharCode,
-  lookaheadType,
-  match,
-  next,
-  nextTemplateToken,
-  popTypeContext,
-  pushTypeContext,
-  rescan_gt,
-  retokenizeSlashAsRegex,
-} from "../tokenizer/index";
-import {ContextualKeyword} from "../tokenizer/keywords";
-import {Scope} from "../tokenizer/state";
-import {TokenType, TokenType as tt} from "../tokenizer/types";
-import {charCodes} from "../util/charcodes";
-import {IS_IDENTIFIER_START} from "../util/identifier";
-import {getNextContextId, isFlowEnabled, isJSXEnabled, isTypeScriptEnabled, state} from "./base";
-import {
-  markPriorBindingIdentifier,
-  parseBindingIdentifier,
-  parseMaybeDefault,
-  parseRest,
-  parseSpread,
-} from "./lval";
-import {
-  parseBlock,
-  parseBlockBody,
-  parseClass,
-  parseDecorators,
-  parseFunction,
-  parseFunctionParams,
-} from "./statement";
-import {
-  canInsertSemicolon,
-  eatContextual,
-  expect,
-  expectContextual,
-  hasFollowingLineBreak,
-  hasPrecedingLineBreak,
-  isContextual,
-  unexpected,
-} from "./util";
 
-export class StopState {
+
+
+
+
+
+
+
+
+
+var _flow = require('../plugins/flow');
+var _index = require('../plugins/jsx/index');
+var _types = require('../plugins/types');
+
+
+
+
+
+
+
+
+
+var _typescript = require('../plugins/typescript');
+
+
+
+
+
+
+
+
+
+
+
+
+var _index3 = require('../tokenizer/index');
+var _keywords = require('../tokenizer/keywords');
+var _state = require('../tokenizer/state');
+var _types3 = require('../tokenizer/types');
+var _charcodes = require('../util/charcodes');
+var _identifier = require('../util/identifier');
+var _base = require('./base');
+
+
+
+
+
+
+var _lval = require('./lval');
+
+
+
+
+
+
+
+var _statement = require('./statement');
+
+
+
+
+
+
+
+
+
+var _util = require('./util');
+
+ class StopState {
   
   constructor(stop) {
     this.stop = stop;
   }
-}
+} exports.StopState = StopState;
 
 // ### Expression parsing
 
@@ -100,14 +100,14 @@ export class StopState {
 // the functions will simply let the function (s) below them parse,
 // and, *if* the syntactic construct they handle is present, wrap
 // the AST node that the inner parser gave them in another node.
-export function parseExpression(noIn = false) {
+ function parseExpression(noIn = false) {
   parseMaybeAssign(noIn);
-  if (match(tt.comma)) {
-    while (eat(tt.comma)) {
+  if (_index3.match.call(void 0, _types3.TokenType.comma)) {
+    while (_index3.eat.call(void 0, _types3.TokenType.comma)) {
       parseMaybeAssign(noIn);
     }
   }
-}
+} exports.parseExpression = parseExpression;
 
 /**
  * noIn is used when parsing a for loop so that we don't interpret a following "in" as the binary
@@ -116,40 +116,40 @@ export function parseExpression(noIn = false) {
  * or might be an arrow function or might be a Flow type assertion (which requires explicit parens).
  * In these cases, we should allow : and ?: after the initial "left" part.
  */
-export function parseMaybeAssign(noIn = false, isWithinParens = false) {
-  if (isTypeScriptEnabled) {
-    return tsParseMaybeAssign(noIn, isWithinParens);
-  } else if (isFlowEnabled) {
-    return flowParseMaybeAssign(noIn, isWithinParens);
+ function parseMaybeAssign(noIn = false, isWithinParens = false) {
+  if (_base.isTypeScriptEnabled) {
+    return _typescript.tsParseMaybeAssign.call(void 0, noIn, isWithinParens);
+  } else if (_base.isFlowEnabled) {
+    return _flow.flowParseMaybeAssign.call(void 0, noIn, isWithinParens);
   } else {
     return baseParseMaybeAssign(noIn, isWithinParens);
   }
-}
+} exports.parseMaybeAssign = parseMaybeAssign;
 
 // Parse an assignment expression. This includes applications of
 // operators like `+=`.
 // Returns true if the expression was an arrow function.
-export function baseParseMaybeAssign(noIn, isWithinParens) {
-  if (match(tt._yield)) {
+ function baseParseMaybeAssign(noIn, isWithinParens) {
+  if (_index3.match.call(void 0, _types3.TokenType._yield)) {
     parseYield();
     return false;
   }
 
-  if (match(tt.parenL) || match(tt.name) || match(tt._yield)) {
-    state.potentialArrowAt = state.start;
+  if (_index3.match.call(void 0, _types3.TokenType.parenL) || _index3.match.call(void 0, _types3.TokenType.name) || _index3.match.call(void 0, _types3.TokenType._yield)) {
+    _base.state.potentialArrowAt = _base.state.start;
   }
 
   const wasArrow = parseMaybeConditional(noIn);
   if (isWithinParens) {
     parseParenItem();
   }
-  if (state.type & TokenType.IS_ASSIGN) {
-    next();
+  if (_base.state.type & _types3.TokenType.IS_ASSIGN) {
+    _index3.next.call(void 0, );
     parseMaybeAssign(noIn);
     return false;
   }
   return wasArrow;
-}
+} exports.baseParseMaybeAssign = baseParseMaybeAssign;
 
 // Parse a ternary conditional (`?:`) operator.
 // Returns true if the expression was an arrow function.
@@ -163,25 +163,25 @@ function parseMaybeConditional(noIn) {
 }
 
 function parseConditional(noIn) {
-  if (isTypeScriptEnabled || isFlowEnabled) {
-    typedParseConditional(noIn);
+  if (_base.isTypeScriptEnabled || _base.isFlowEnabled) {
+    _types.typedParseConditional.call(void 0, noIn);
   } else {
     baseParseConditional(noIn);
   }
 }
 
-export function baseParseConditional(noIn) {
-  if (eat(tt.question)) {
+ function baseParseConditional(noIn) {
+  if (_index3.eat.call(void 0, _types3.TokenType.question)) {
     parseMaybeAssign();
-    expect(tt.colon);
+    _util.expect.call(void 0, _types3.TokenType.colon);
     parseMaybeAssign(noIn);
   }
-}
+} exports.baseParseConditional = baseParseConditional;
 
 // Start the precedence parser.
 // Returns true if this was an arrow function
 function parseExprOps(noIn) {
-  const startTokenIndex = state.tokens.length;
+  const startTokenIndex = _base.state.tokens.length;
   const wasArrow = parseMaybeUnary();
   if (wasArrow) {
     return true;
@@ -197,35 +197,35 @@ function parseExprOps(noIn) {
 // operator that has a lower precedence than the set it is parsing.
 function parseExprOp(startTokenIndex, minPrec, noIn) {
   if (
-    isTypeScriptEnabled &&
-    (tt._in & TokenType.PRECEDENCE_MASK) > minPrec &&
-    !hasPrecedingLineBreak() &&
-    (eatContextual(ContextualKeyword._as) || eatContextual(ContextualKeyword._satisfies))
+    _base.isTypeScriptEnabled &&
+    (_types3.TokenType._in & _types3.TokenType.PRECEDENCE_MASK) > minPrec &&
+    !_util.hasPrecedingLineBreak.call(void 0, ) &&
+    (_util.eatContextual.call(void 0, _keywords.ContextualKeyword._as) || _util.eatContextual.call(void 0, _keywords.ContextualKeyword._satisfies))
   ) {
-    const oldIsType = pushTypeContext(1);
-    tsParseType();
-    popTypeContext(oldIsType);
-    rescan_gt();
+    const oldIsType = _index3.pushTypeContext.call(void 0, 1);
+    _typescript.tsParseType.call(void 0, );
+    _index3.popTypeContext.call(void 0, oldIsType);
+    _index3.rescan_gt.call(void 0, );
     parseExprOp(startTokenIndex, minPrec, noIn);
     return;
   }
 
-  const prec = state.type & TokenType.PRECEDENCE_MASK;
-  if (prec > 0 && (!noIn || !match(tt._in))) {
+  const prec = _base.state.type & _types3.TokenType.PRECEDENCE_MASK;
+  if (prec > 0 && (!noIn || !_index3.match.call(void 0, _types3.TokenType._in))) {
     if (prec > minPrec) {
-      const op = state.type;
-      next();
-      if (op === tt.nullishCoalescing) {
-        state.tokens[state.tokens.length - 1].nullishStartIndex = startTokenIndex;
+      const op = _base.state.type;
+      _index3.next.call(void 0, );
+      if (op === _types3.TokenType.nullishCoalescing) {
+        _base.state.tokens[_base.state.tokens.length - 1].nullishStartIndex = startTokenIndex;
       }
 
-      const rhsStartTokenIndex = state.tokens.length;
+      const rhsStartTokenIndex = _base.state.tokens.length;
       parseMaybeUnary();
       // Extend the right operand of this operator if possible.
-      parseExprOp(rhsStartTokenIndex, op & TokenType.IS_RIGHT_ASSOCIATIVE ? prec - 1 : prec, noIn);
-      if (op === tt.nullishCoalescing) {
-        state.tokens[startTokenIndex].numNullishCoalesceStarts++;
-        state.tokens[state.tokens.length - 1].numNullishCoalesceEnds++;
+      parseExprOp(rhsStartTokenIndex, op & _types3.TokenType.IS_RIGHT_ASSOCIATIVE ? prec - 1 : prec, noIn);
+      if (op === _types3.TokenType.nullishCoalescing) {
+        _base.state.tokens[startTokenIndex].numNullishCoalesceStarts++;
+        _base.state.tokens[_base.state.tokens.length - 1].numNullishCoalesceEnds++;
       }
       // Continue with any future operator holding this expression as the left operand.
       parseExprOp(startTokenIndex, minPrec, noIn);
@@ -235,21 +235,21 @@ function parseExprOp(startTokenIndex, minPrec, noIn) {
 
 // Parse unary operators, both prefix and postfix.
 // Returns true if this was an arrow function.
-export function parseMaybeUnary() {
-  if (isTypeScriptEnabled && !isJSXEnabled && eat(tt.lessThan)) {
-    tsParseTypeAssertion();
+ function parseMaybeUnary() {
+  if (_base.isTypeScriptEnabled && !_base.isJSXEnabled && _index3.eat.call(void 0, _types3.TokenType.lessThan)) {
+    _typescript.tsParseTypeAssertion.call(void 0, );
     return false;
   }
   if (
-    isContextual(ContextualKeyword._module) &&
-    lookaheadCharCode() === charCodes.leftCurlyBrace &&
-    !hasFollowingLineBreak()
+    _util.isContextual.call(void 0, _keywords.ContextualKeyword._module) &&
+    _index3.lookaheadCharCode.call(void 0, ) === _charcodes.charCodes.leftCurlyBrace &&
+    !_util.hasFollowingLineBreak.call(void 0, )
   ) {
     parseModuleExpression();
     return false;
   }
-  if (state.type & TokenType.IS_PREFIX) {
-    next();
+  if (_base.state.type & _types3.TokenType.IS_PREFIX) {
+    _index3.next.call(void 0, );
     parseMaybeUnary();
     return false;
   }
@@ -258,21 +258,21 @@ export function parseMaybeUnary() {
   if (wasArrow) {
     return true;
   }
-  while (state.type & TokenType.IS_POSTFIX && !canInsertSemicolon()) {
+  while (_base.state.type & _types3.TokenType.IS_POSTFIX && !_util.canInsertSemicolon.call(void 0, )) {
     // The tokenizer calls everything a preincrement, so make it a postincrement when
     // we see it in that context.
-    if (state.type === tt.preIncDec) {
-      state.type = tt.postIncDec;
+    if (_base.state.type === _types3.TokenType.preIncDec) {
+      _base.state.type = _types3.TokenType.postIncDec;
     }
-    next();
+    _index3.next.call(void 0, );
   }
   return false;
-}
+} exports.parseMaybeUnary = parseMaybeUnary;
 
 // Parse call, dot, and `[]`-subscript expressions.
 // Returns true if this was an arrow function.
-export function parseExprSubscripts() {
-  const startTokenIndex = state.tokens.length;
+ function parseExprSubscripts() {
+  const startTokenIndex = _base.state.tokens.length;
   const wasArrow = parseExprAtom();
   if (wasArrow) {
     return true;
@@ -280,156 +280,156 @@ export function parseExprSubscripts() {
   parseSubscripts(startTokenIndex);
   // If there was any optional chain operation, the start token would be marked
   // as such, so also mark the end now.
-  if (state.tokens.length > startTokenIndex && state.tokens[startTokenIndex].isOptionalChainStart) {
-    state.tokens[state.tokens.length - 1].isOptionalChainEnd = true;
+  if (_base.state.tokens.length > startTokenIndex && _base.state.tokens[startTokenIndex].isOptionalChainStart) {
+    _base.state.tokens[_base.state.tokens.length - 1].isOptionalChainEnd = true;
   }
   return false;
-}
+} exports.parseExprSubscripts = parseExprSubscripts;
 
 function parseSubscripts(startTokenIndex, noCalls = false) {
-  if (isFlowEnabled) {
-    flowParseSubscripts(startTokenIndex, noCalls);
+  if (_base.isFlowEnabled) {
+    _flow.flowParseSubscripts.call(void 0, startTokenIndex, noCalls);
   } else {
     baseParseSubscripts(startTokenIndex, noCalls);
   }
 }
 
-export function baseParseSubscripts(startTokenIndex, noCalls = false) {
+ function baseParseSubscripts(startTokenIndex, noCalls = false) {
   const stopState = new StopState(false);
   do {
     parseSubscript(startTokenIndex, noCalls, stopState);
-  } while (!stopState.stop && !state.error);
-}
+  } while (!stopState.stop && !_base.state.error);
+} exports.baseParseSubscripts = baseParseSubscripts;
 
 function parseSubscript(startTokenIndex, noCalls, stopState) {
-  if (isTypeScriptEnabled) {
-    tsParseSubscript(startTokenIndex, noCalls, stopState);
-  } else if (isFlowEnabled) {
-    flowParseSubscript(startTokenIndex, noCalls, stopState);
+  if (_base.isTypeScriptEnabled) {
+    _typescript.tsParseSubscript.call(void 0, startTokenIndex, noCalls, stopState);
+  } else if (_base.isFlowEnabled) {
+    _flow.flowParseSubscript.call(void 0, startTokenIndex, noCalls, stopState);
   } else {
     baseParseSubscript(startTokenIndex, noCalls, stopState);
   }
 }
 
 /** Set 'state.stop = true' to indicate that we should stop parsing subscripts. */
-export function baseParseSubscript(
+ function baseParseSubscript(
   startTokenIndex,
   noCalls,
   stopState,
 ) {
-  if (!noCalls && eat(tt.doubleColon)) {
+  if (!noCalls && _index3.eat.call(void 0, _types3.TokenType.doubleColon)) {
     parseNoCallExpr();
     stopState.stop = true;
     // Propagate startTokenIndex so that `a::b?.()` will keep `a` as the first token. We may want
     // to revisit this in the future when fully supporting bind syntax.
     parseSubscripts(startTokenIndex, noCalls);
-  } else if (match(tt.questionDot)) {
-    state.tokens[startTokenIndex].isOptionalChainStart = true;
-    if (noCalls && lookaheadType() === tt.parenL) {
+  } else if (_index3.match.call(void 0, _types3.TokenType.questionDot)) {
+    _base.state.tokens[startTokenIndex].isOptionalChainStart = true;
+    if (noCalls && _index3.lookaheadType.call(void 0, ) === _types3.TokenType.parenL) {
       stopState.stop = true;
       return;
     }
-    next();
-    state.tokens[state.tokens.length - 1].subscriptStartIndex = startTokenIndex;
+    _index3.next.call(void 0, );
+    _base.state.tokens[_base.state.tokens.length - 1].subscriptStartIndex = startTokenIndex;
 
-    if (eat(tt.bracketL)) {
+    if (_index3.eat.call(void 0, _types3.TokenType.bracketL)) {
       parseExpression();
-      expect(tt.bracketR);
-    } else if (eat(tt.parenL)) {
+      _util.expect.call(void 0, _types3.TokenType.bracketR);
+    } else if (_index3.eat.call(void 0, _types3.TokenType.parenL)) {
       parseCallExpressionArguments();
     } else {
       parseMaybePrivateName();
     }
-  } else if (eat(tt.dot)) {
-    state.tokens[state.tokens.length - 1].subscriptStartIndex = startTokenIndex;
+  } else if (_index3.eat.call(void 0, _types3.TokenType.dot)) {
+    _base.state.tokens[_base.state.tokens.length - 1].subscriptStartIndex = startTokenIndex;
     parseMaybePrivateName();
-  } else if (eat(tt.bracketL)) {
-    state.tokens[state.tokens.length - 1].subscriptStartIndex = startTokenIndex;
+  } else if (_index3.eat.call(void 0, _types3.TokenType.bracketL)) {
+    _base.state.tokens[_base.state.tokens.length - 1].subscriptStartIndex = startTokenIndex;
     parseExpression();
-    expect(tt.bracketR);
-  } else if (!noCalls && match(tt.parenL)) {
+    _util.expect.call(void 0, _types3.TokenType.bracketR);
+  } else if (!noCalls && _index3.match.call(void 0, _types3.TokenType.parenL)) {
     if (atPossibleAsync()) {
       // We see "async", but it's possible it's a usage of the name "async". Parse as if it's a
       // function call, and if we see an arrow later, backtrack and re-parse as a parameter list.
-      const snapshot = state.snapshot();
-      const asyncStartTokenIndex = state.tokens.length;
-      next();
-      state.tokens[state.tokens.length - 1].subscriptStartIndex = startTokenIndex;
+      const snapshot = _base.state.snapshot();
+      const asyncStartTokenIndex = _base.state.tokens.length;
+      _index3.next.call(void 0, );
+      _base.state.tokens[_base.state.tokens.length - 1].subscriptStartIndex = startTokenIndex;
 
-      const callContextId = getNextContextId();
+      const callContextId = _base.getNextContextId.call(void 0, );
 
-      state.tokens[state.tokens.length - 1].contextId = callContextId;
+      _base.state.tokens[_base.state.tokens.length - 1].contextId = callContextId;
       parseCallExpressionArguments();
-      state.tokens[state.tokens.length - 1].contextId = callContextId;
+      _base.state.tokens[_base.state.tokens.length - 1].contextId = callContextId;
 
       if (shouldParseAsyncArrow()) {
         // We hit an arrow, so backtrack and start again parsing function parameters.
-        state.restoreFromSnapshot(snapshot);
+        _base.state.restoreFromSnapshot(snapshot);
         stopState.stop = true;
-        state.scopeDepth++;
+        _base.state.scopeDepth++;
 
-        parseFunctionParams();
+        _statement.parseFunctionParams.call(void 0, );
         parseAsyncArrowFromCallExpression(asyncStartTokenIndex);
       }
     } else {
-      next();
-      state.tokens[state.tokens.length - 1].subscriptStartIndex = startTokenIndex;
-      const callContextId = getNextContextId();
-      state.tokens[state.tokens.length - 1].contextId = callContextId;
+      _index3.next.call(void 0, );
+      _base.state.tokens[_base.state.tokens.length - 1].subscriptStartIndex = startTokenIndex;
+      const callContextId = _base.getNextContextId.call(void 0, );
+      _base.state.tokens[_base.state.tokens.length - 1].contextId = callContextId;
       parseCallExpressionArguments();
-      state.tokens[state.tokens.length - 1].contextId = callContextId;
+      _base.state.tokens[_base.state.tokens.length - 1].contextId = callContextId;
     }
-  } else if (match(tt.backQuote)) {
+  } else if (_index3.match.call(void 0, _types3.TokenType.backQuote)) {
     // Tagged template expression.
     parseTemplate();
   } else {
     stopState.stop = true;
   }
-}
+} exports.baseParseSubscript = baseParseSubscript;
 
-export function atPossibleAsync() {
+ function atPossibleAsync() {
   // This was made less strict than the original version to avoid passing around nodes, but it
   // should be safe to have rare false positives here.
   return (
-    state.tokens[state.tokens.length - 1].contextualKeyword === ContextualKeyword._async &&
-    !canInsertSemicolon()
+    _base.state.tokens[_base.state.tokens.length - 1].contextualKeyword === _keywords.ContextualKeyword._async &&
+    !_util.canInsertSemicolon.call(void 0, )
   );
-}
+} exports.atPossibleAsync = atPossibleAsync;
 
-export function parseCallExpressionArguments() {
+ function parseCallExpressionArguments() {
   let first = true;
-  while (!eat(tt.parenR) && !state.error) {
+  while (!_index3.eat.call(void 0, _types3.TokenType.parenR) && !_base.state.error) {
     if (first) {
       first = false;
     } else {
-      expect(tt.comma);
-      if (eat(tt.parenR)) {
+      _util.expect.call(void 0, _types3.TokenType.comma);
+      if (_index3.eat.call(void 0, _types3.TokenType.parenR)) {
         break;
       }
     }
 
     parseExprListItem(false);
   }
-}
+} exports.parseCallExpressionArguments = parseCallExpressionArguments;
 
 function shouldParseAsyncArrow() {
-  return match(tt.colon) || match(tt.arrow);
+  return _index3.match.call(void 0, _types3.TokenType.colon) || _index3.match.call(void 0, _types3.TokenType.arrow);
 }
 
 function parseAsyncArrowFromCallExpression(startTokenIndex) {
-  if (isTypeScriptEnabled) {
-    tsStartParseAsyncArrowFromCallExpression();
-  } else if (isFlowEnabled) {
-    flowStartParseAsyncArrowFromCallExpression();
+  if (_base.isTypeScriptEnabled) {
+    _typescript.tsStartParseAsyncArrowFromCallExpression.call(void 0, );
+  } else if (_base.isFlowEnabled) {
+    _flow.flowStartParseAsyncArrowFromCallExpression.call(void 0, );
   }
-  expect(tt.arrow);
+  _util.expect.call(void 0, _types3.TokenType.arrow);
   parseArrowExpression(startTokenIndex);
 }
 
 // Parse a no-call expression (like argument of `new` or `::` operators).
 
 function parseNoCallExpr() {
-  const startTokenIndex = state.tokens.length;
+  const startTokenIndex = _base.state.tokens.length;
   parseExprAtom();
   parseSubscripts(startTokenIndex, true);
 }
@@ -439,211 +439,211 @@ function parseNoCallExpr() {
 // `new`, or an expression wrapped in punctuation like `()`, `[]`,
 // or `{}`.
 // Returns true if the parsed expression was an arrow function.
-export function parseExprAtom() {
-  if (eat(tt.modulo)) {
+ function parseExprAtom() {
+  if (_index3.eat.call(void 0, _types3.TokenType.modulo)) {
     // V8 intrinsic expression. Just parse the identifier, and the function invocation is parsed
     // naturally.
     parseIdentifier();
     return false;
   }
 
-  if (match(tt.jsxText) || match(tt.jsxEmptyText)) {
+  if (_index3.match.call(void 0, _types3.TokenType.jsxText) || _index3.match.call(void 0, _types3.TokenType.jsxEmptyText)) {
     parseLiteral();
     return false;
-  } else if (match(tt.lessThan) && isJSXEnabled) {
-    state.type = tt.jsxTagStart;
-    jsxParseElement();
-    next();
+  } else if (_index3.match.call(void 0, _types3.TokenType.lessThan) && _base.isJSXEnabled) {
+    _base.state.type = _types3.TokenType.jsxTagStart;
+    _index.jsxParseElement.call(void 0, );
+    _index3.next.call(void 0, );
     return false;
   }
 
-  const canBeArrow = state.potentialArrowAt === state.start;
-  switch (state.type) {
-    case tt.slash:
-    case tt.assign:
-      retokenizeSlashAsRegex();
+  const canBeArrow = _base.state.potentialArrowAt === _base.state.start;
+  switch (_base.state.type) {
+    case _types3.TokenType.slash:
+    case _types3.TokenType.assign:
+      _index3.retokenizeSlashAsRegex.call(void 0, );
     // Fall through.
 
-    case tt._super:
-    case tt._this:
-    case tt.regexp:
-    case tt.num:
-    case tt.bigint:
-    case tt.decimal:
-    case tt.string:
-    case tt._null:
-    case tt._true:
-    case tt._false:
-      next();
+    case _types3.TokenType._super:
+    case _types3.TokenType._this:
+    case _types3.TokenType.regexp:
+    case _types3.TokenType.num:
+    case _types3.TokenType.bigint:
+    case _types3.TokenType.decimal:
+    case _types3.TokenType.string:
+    case _types3.TokenType._null:
+    case _types3.TokenType._true:
+    case _types3.TokenType._false:
+      _index3.next.call(void 0, );
       return false;
 
-    case tt._import:
-      next();
-      if (match(tt.dot)) {
+    case _types3.TokenType._import:
+      _index3.next.call(void 0, );
+      if (_index3.match.call(void 0, _types3.TokenType.dot)) {
         // import.meta
-        state.tokens[state.tokens.length - 1].type = tt.name;
-        next();
+        _base.state.tokens[_base.state.tokens.length - 1].type = _types3.TokenType.name;
+        _index3.next.call(void 0, );
         parseIdentifier();
       }
       return false;
 
-    case tt.name: {
-      const startTokenIndex = state.tokens.length;
-      const functionStart = state.start;
-      const contextualKeyword = state.contextualKeyword;
+    case _types3.TokenType.name: {
+      const startTokenIndex = _base.state.tokens.length;
+      const functionStart = _base.state.start;
+      const contextualKeyword = _base.state.contextualKeyword;
       parseIdentifier();
-      if (contextualKeyword === ContextualKeyword._await) {
+      if (contextualKeyword === _keywords.ContextualKeyword._await) {
         parseAwait();
         return false;
       } else if (
-        contextualKeyword === ContextualKeyword._async &&
-        match(tt._function) &&
-        !canInsertSemicolon()
+        contextualKeyword === _keywords.ContextualKeyword._async &&
+        _index3.match.call(void 0, _types3.TokenType._function) &&
+        !_util.canInsertSemicolon.call(void 0, )
       ) {
-        next();
-        parseFunction(functionStart, false);
+        _index3.next.call(void 0, );
+        _statement.parseFunction.call(void 0, functionStart, false);
         return false;
       } else if (
         canBeArrow &&
-        contextualKeyword === ContextualKeyword._async &&
-        !canInsertSemicolon() &&
-        match(tt.name)
+        contextualKeyword === _keywords.ContextualKeyword._async &&
+        !_util.canInsertSemicolon.call(void 0, ) &&
+        _index3.match.call(void 0, _types3.TokenType.name)
       ) {
-        state.scopeDepth++;
-        parseBindingIdentifier(false);
-        expect(tt.arrow);
+        _base.state.scopeDepth++;
+        _lval.parseBindingIdentifier.call(void 0, false);
+        _util.expect.call(void 0, _types3.TokenType.arrow);
         // let foo = async bar => {};
         parseArrowExpression(startTokenIndex);
         return true;
-      } else if (match(tt._do) && !canInsertSemicolon()) {
-        next();
-        parseBlock();
+      } else if (_index3.match.call(void 0, _types3.TokenType._do) && !_util.canInsertSemicolon.call(void 0, )) {
+        _index3.next.call(void 0, );
+        _statement.parseBlock.call(void 0, );
         return false;
       }
 
-      if (canBeArrow && !canInsertSemicolon() && match(tt.arrow)) {
-        state.scopeDepth++;
-        markPriorBindingIdentifier(false);
-        expect(tt.arrow);
+      if (canBeArrow && !_util.canInsertSemicolon.call(void 0, ) && _index3.match.call(void 0, _types3.TokenType.arrow)) {
+        _base.state.scopeDepth++;
+        _lval.markPriorBindingIdentifier.call(void 0, false);
+        _util.expect.call(void 0, _types3.TokenType.arrow);
         parseArrowExpression(startTokenIndex);
         return true;
       }
 
-      state.tokens[state.tokens.length - 1].identifierRole = IdentifierRole.Access;
+      _base.state.tokens[_base.state.tokens.length - 1].identifierRole = _index3.IdentifierRole.Access;
       return false;
     }
 
-    case tt._do: {
-      next();
-      parseBlock();
+    case _types3.TokenType._do: {
+      _index3.next.call(void 0, );
+      _statement.parseBlock.call(void 0, );
       return false;
     }
 
-    case tt.parenL: {
+    case _types3.TokenType.parenL: {
       const wasArrow = parseParenAndDistinguishExpression(canBeArrow);
       return wasArrow;
     }
 
-    case tt.bracketL:
-      next();
-      parseExprList(tt.bracketR, true);
+    case _types3.TokenType.bracketL:
+      _index3.next.call(void 0, );
+      parseExprList(_types3.TokenType.bracketR, true);
       return false;
 
-    case tt.braceL:
+    case _types3.TokenType.braceL:
       parseObj(false, false);
       return false;
 
-    case tt._function:
+    case _types3.TokenType._function:
       parseFunctionExpression();
       return false;
 
-    case tt.at:
-      parseDecorators();
+    case _types3.TokenType.at:
+      _statement.parseDecorators.call(void 0, );
     // Fall through.
 
-    case tt._class:
-      parseClass(false);
+    case _types3.TokenType._class:
+      _statement.parseClass.call(void 0, false);
       return false;
 
-    case tt._new:
+    case _types3.TokenType._new:
       parseNew();
       return false;
 
-    case tt.backQuote:
+    case _types3.TokenType.backQuote:
       parseTemplate();
       return false;
 
-    case tt.doubleColon: {
-      next();
+    case _types3.TokenType.doubleColon: {
+      _index3.next.call(void 0, );
       parseNoCallExpr();
       return false;
     }
 
-    case tt.hash: {
-      const code = lookaheadCharCode();
-      if (IS_IDENTIFIER_START[code] || code === charCodes.backslash) {
+    case _types3.TokenType.hash: {
+      const code = _index3.lookaheadCharCode.call(void 0, );
+      if (_identifier.IS_IDENTIFIER_START[code] || code === _charcodes.charCodes.backslash) {
         parseMaybePrivateName();
       } else {
-        next();
+        _index3.next.call(void 0, );
       }
       // Smart pipeline topic reference.
       return false;
     }
 
     default:
-      unexpected();
+      _util.unexpected.call(void 0, );
       return false;
   }
-}
+} exports.parseExprAtom = parseExprAtom;
 
 function parseMaybePrivateName() {
-  eat(tt.hash);
+  _index3.eat.call(void 0, _types3.TokenType.hash);
   parseIdentifier();
 }
 
 function parseFunctionExpression() {
-  const functionStart = state.start;
+  const functionStart = _base.state.start;
   parseIdentifier();
-  if (eat(tt.dot)) {
+  if (_index3.eat.call(void 0, _types3.TokenType.dot)) {
     // function.sent
     parseIdentifier();
   }
-  parseFunction(functionStart, false);
+  _statement.parseFunction.call(void 0, functionStart, false);
 }
 
-export function parseLiteral() {
-  next();
-}
+ function parseLiteral() {
+  _index3.next.call(void 0, );
+} exports.parseLiteral = parseLiteral;
 
-export function parseParenExpression() {
-  expect(tt.parenL);
+ function parseParenExpression() {
+  _util.expect.call(void 0, _types3.TokenType.parenL);
   parseExpression();
-  expect(tt.parenR);
-}
+  _util.expect.call(void 0, _types3.TokenType.parenR);
+} exports.parseParenExpression = parseParenExpression;
 
 // Returns true if this was an arrow expression.
 function parseParenAndDistinguishExpression(canBeArrow) {
   // Assume this is a normal parenthesized expression, but if we see an arrow, we'll bail and
   // start over as a parameter list.
-  const snapshot = state.snapshot();
+  const snapshot = _base.state.snapshot();
 
-  const startTokenIndex = state.tokens.length;
-  expect(tt.parenL);
+  const startTokenIndex = _base.state.tokens.length;
+  _util.expect.call(void 0, _types3.TokenType.parenL);
 
   let first = true;
 
-  while (!match(tt.parenR) && !state.error) {
+  while (!_index3.match.call(void 0, _types3.TokenType.parenR) && !_base.state.error) {
     if (first) {
       first = false;
     } else {
-      expect(tt.comma);
-      if (match(tt.parenR)) {
+      _util.expect.call(void 0, _types3.TokenType.comma);
+      if (_index3.match.call(void 0, _types3.TokenType.parenR)) {
         break;
       }
     }
 
-    if (match(tt.ellipsis)) {
-      parseRest(false /* isBlockScope */);
+    if (_index3.match.call(void 0, _types3.TokenType.ellipsis)) {
+      _lval.parseRest.call(void 0, false /* isBlockScope */);
       parseParenItem();
       break;
     } else {
@@ -651,25 +651,25 @@ function parseParenAndDistinguishExpression(canBeArrow) {
     }
   }
 
-  expect(tt.parenR);
+  _util.expect.call(void 0, _types3.TokenType.parenR);
 
   if (canBeArrow && shouldParseArrow()) {
     const wasArrow = parseArrow();
     if (wasArrow) {
       // It was an arrow function this whole time, so start over and parse it as params so that we
       // get proper token annotations.
-      state.restoreFromSnapshot(snapshot);
-      state.scopeDepth++;
+      _base.state.restoreFromSnapshot(snapshot);
+      _base.state.scopeDepth++;
       // Don't specify a context ID because arrow functions don't need a context ID.
-      parseFunctionParams();
+      _statement.parseFunctionParams.call(void 0, );
       parseArrow();
       parseArrowExpression(startTokenIndex);
-      if (state.error) {
+      if (_base.state.error) {
         // Nevermind! This must have been something that looks very much like an
         // arrow function but where its "parameter list" isn't actually a valid
         // parameter list. Force non-arrow parsing.
         // See https://github.com/alangpierce/sucrase/issues/666 for an example.
-        state.restoreFromSnapshot(snapshot);
+        _base.state.restoreFromSnapshot(snapshot);
         parseParenAndDistinguishExpression(false);
         return false;
       }
@@ -681,23 +681,23 @@ function parseParenAndDistinguishExpression(canBeArrow) {
 }
 
 function shouldParseArrow() {
-  return match(tt.colon) || !canInsertSemicolon();
+  return _index3.match.call(void 0, _types3.TokenType.colon) || !_util.canInsertSemicolon.call(void 0, );
 }
 
 // Returns whether there was an arrow token.
-export function parseArrow() {
-  if (isTypeScriptEnabled) {
-    return tsParseArrow();
-  } else if (isFlowEnabled) {
-    return flowParseArrow();
+ function parseArrow() {
+  if (_base.isTypeScriptEnabled) {
+    return _typescript.tsParseArrow.call(void 0, );
+  } else if (_base.isFlowEnabled) {
+    return _flow.flowParseArrow.call(void 0, );
   } else {
-    return eat(tt.arrow);
+    return _index3.eat.call(void 0, _types3.TokenType.arrow);
   }
-}
+} exports.parseArrow = parseArrow;
 
 function parseParenItem() {
-  if (isTypeScriptEnabled || isFlowEnabled) {
-    typedParseParenItem();
+  if (_base.isTypeScriptEnabled || _base.isFlowEnabled) {
+    _types.typedParseParenItem.call(void 0, );
   }
 }
 
@@ -707,71 +707,71 @@ function parseParenItem() {
 // argument to parseSubscripts to prevent it from consuming the
 // argument list.
 function parseNew() {
-  expect(tt._new);
-  if (eat(tt.dot)) {
+  _util.expect.call(void 0, _types3.TokenType._new);
+  if (_index3.eat.call(void 0, _types3.TokenType.dot)) {
     // new.target
     parseIdentifier();
     return;
   }
   parseNewCallee();
-  if (isFlowEnabled) {
-    flowStartParseNewArguments();
+  if (_base.isFlowEnabled) {
+    _flow.flowStartParseNewArguments.call(void 0, );
   }
-  if (eat(tt.parenL)) {
-    parseExprList(tt.parenR);
+  if (_index3.eat.call(void 0, _types3.TokenType.parenL)) {
+    parseExprList(_types3.TokenType.parenR);
   }
 }
 
 function parseNewCallee() {
   parseNoCallExpr();
-  eat(tt.questionDot);
+  _index3.eat.call(void 0, _types3.TokenType.questionDot);
 }
 
-export function parseTemplate() {
+ function parseTemplate() {
   // Finish `, read quasi
-  nextTemplateToken();
+  _index3.nextTemplateToken.call(void 0, );
   // Finish quasi, read ${
-  nextTemplateToken();
-  while (!match(tt.backQuote) && !state.error) {
-    expect(tt.dollarBraceL);
+  _index3.nextTemplateToken.call(void 0, );
+  while (!_index3.match.call(void 0, _types3.TokenType.backQuote) && !_base.state.error) {
+    _util.expect.call(void 0, _types3.TokenType.dollarBraceL);
     parseExpression();
     // Finish }, read quasi
-    nextTemplateToken();
+    _index3.nextTemplateToken.call(void 0, );
     // Finish quasi, read either ${ or `
-    nextTemplateToken();
+    _index3.nextTemplateToken.call(void 0, );
   }
-  next();
-}
+  _index3.next.call(void 0, );
+} exports.parseTemplate = parseTemplate;
 
 // Parse an object literal or binding pattern.
-export function parseObj(isPattern, isBlockScope) {
+ function parseObj(isPattern, isBlockScope) {
   // Attach a context ID to the object open and close brace and each object key.
-  const contextId = getNextContextId();
+  const contextId = _base.getNextContextId.call(void 0, );
   let first = true;
 
-  next();
-  state.tokens[state.tokens.length - 1].contextId = contextId;
+  _index3.next.call(void 0, );
+  _base.state.tokens[_base.state.tokens.length - 1].contextId = contextId;
 
-  while (!eat(tt.braceR) && !state.error) {
+  while (!_index3.eat.call(void 0, _types3.TokenType.braceR) && !_base.state.error) {
     if (first) {
       first = false;
     } else {
-      expect(tt.comma);
-      if (eat(tt.braceR)) {
+      _util.expect.call(void 0, _types3.TokenType.comma);
+      if (_index3.eat.call(void 0, _types3.TokenType.braceR)) {
         break;
       }
     }
 
     let isGenerator = false;
-    if (match(tt.ellipsis)) {
-      const previousIndex = state.tokens.length;
-      parseSpread();
+    if (_index3.match.call(void 0, _types3.TokenType.ellipsis)) {
+      const previousIndex = _base.state.tokens.length;
+      _lval.parseSpread.call(void 0, );
       if (isPattern) {
         // Mark role when the only thing being spread over is an identifier.
-        if (state.tokens.length === previousIndex + 2) {
-          markPriorBindingIdentifier(isBlockScope);
+        if (_base.state.tokens.length === previousIndex + 2) {
+          _lval.markPriorBindingIdentifier.call(void 0, isBlockScope);
         }
-        if (eat(tt.braceR)) {
+        if (_index3.eat.call(void 0, _types3.TokenType.braceR)) {
           break;
         }
       }
@@ -779,24 +779,24 @@ export function parseObj(isPattern, isBlockScope) {
     }
 
     if (!isPattern) {
-      isGenerator = eat(tt.star);
+      isGenerator = _index3.eat.call(void 0, _types3.TokenType.star);
     }
 
-    if (!isPattern && isContextual(ContextualKeyword._async)) {
-      if (isGenerator) unexpected();
+    if (!isPattern && _util.isContextual.call(void 0, _keywords.ContextualKeyword._async)) {
+      if (isGenerator) _util.unexpected.call(void 0, );
 
       parseIdentifier();
       if (
-        match(tt.colon) ||
-        match(tt.parenL) ||
-        match(tt.braceR) ||
-        match(tt.eq) ||
-        match(tt.comma)
+        _index3.match.call(void 0, _types3.TokenType.colon) ||
+        _index3.match.call(void 0, _types3.TokenType.parenL) ||
+        _index3.match.call(void 0, _types3.TokenType.braceR) ||
+        _index3.match.call(void 0, _types3.TokenType.eq) ||
+        _index3.match.call(void 0, _types3.TokenType.comma)
       ) {
         // This is a key called "async" rather than an async function.
       } else {
-        if (match(tt.star)) {
-          next();
+        if (_index3.match.call(void 0, _types3.TokenType.star)) {
+          _index3.next.call(void 0, );
           isGenerator = true;
         }
         parsePropertyName(contextId);
@@ -808,19 +808,19 @@ export function parseObj(isPattern, isBlockScope) {
     parseObjPropValue(isPattern, isBlockScope, contextId);
   }
 
-  state.tokens[state.tokens.length - 1].contextId = contextId;
-}
+  _base.state.tokens[_base.state.tokens.length - 1].contextId = contextId;
+} exports.parseObj = parseObj;
 
 function isGetterOrSetterMethod(isPattern) {
   // We go off of the next and don't bother checking if the node key is actually "get" or "set".
   // This lets us avoid generating a node, and should only make the validation worse.
   return (
     !isPattern &&
-    (match(tt.string) || // get "string"() {}
-      match(tt.num) || // get 1() {}
-      match(tt.bracketL) || // get ["string"]() {}
-      match(tt.name) || // get foo() {}
-      !!(state.type & TokenType.IS_KEYWORD)) // get debugger() {}
+    (_index3.match.call(void 0, _types3.TokenType.string) || // get "string"() {}
+      _index3.match.call(void 0, _types3.TokenType.num) || // get 1() {}
+      _index3.match.call(void 0, _types3.TokenType.bracketL) || // get ["string"]() {}
+      _index3.match.call(void 0, _types3.TokenType.name) || // get foo() {}
+      !!(_base.state.type & _types3.TokenType.IS_KEYWORD)) // get debugger() {}
   );
 }
 
@@ -828,9 +828,9 @@ function isGetterOrSetterMethod(isPattern) {
 function parseObjectMethod(isPattern, objectContextId) {
   // We don't need to worry about modifiers because object methods can't have optional bodies, so
   // the start will never be used.
-  const functionStart = state.start;
-  if (match(tt.parenL)) {
-    if (isPattern) unexpected();
+  const functionStart = _base.state.start;
+  if (_index3.match.call(void 0, _types3.TokenType.parenL)) {
+    if (isPattern) _util.unexpected.call(void 0, );
     parseMethod(functionStart, /* isConstructor */ false);
     return true;
   }
@@ -844,9 +844,9 @@ function parseObjectMethod(isPattern, objectContextId) {
 }
 
 function parseObjectProperty(isPattern, isBlockScope) {
-  if (eat(tt.colon)) {
+  if (_index3.eat.call(void 0, _types3.TokenType.colon)) {
     if (isPattern) {
-      parseMaybeDefault(isBlockScope);
+      _lval.parseMaybeDefault.call(void 0, isBlockScope);
     } else {
       parseMaybeAssign(false);
     }
@@ -860,21 +860,21 @@ function parseObjectProperty(isPattern, isBlockScope) {
   // transform it on access, so mark it as a normal object shorthand.
   let identifierRole;
   if (isPattern) {
-    if (state.scopeDepth === 0) {
-      identifierRole = IdentifierRole.ObjectShorthandTopLevelDeclaration;
+    if (_base.state.scopeDepth === 0) {
+      identifierRole = _index3.IdentifierRole.ObjectShorthandTopLevelDeclaration;
     } else if (isBlockScope) {
-      identifierRole = IdentifierRole.ObjectShorthandBlockScopedDeclaration;
+      identifierRole = _index3.IdentifierRole.ObjectShorthandBlockScopedDeclaration;
     } else {
-      identifierRole = IdentifierRole.ObjectShorthandFunctionScopedDeclaration;
+      identifierRole = _index3.IdentifierRole.ObjectShorthandFunctionScopedDeclaration;
     }
   } else {
-    identifierRole = IdentifierRole.ObjectShorthand;
+    identifierRole = _index3.IdentifierRole.ObjectShorthand;
   }
-  state.tokens[state.tokens.length - 1].identifierRole = identifierRole;
+  _base.state.tokens[_base.state.tokens.length - 1].identifierRole = identifierRole;
 
   // Regardless of whether we know this to be a pattern or if we're in an ambiguous context, allow
   // parsing as if there's a default value.
-  parseMaybeDefault(isBlockScope, true);
+  _lval.parseMaybeDefault.call(void 0, isBlockScope, true);
 }
 
 function parseObjPropValue(
@@ -882,10 +882,10 @@ function parseObjPropValue(
   isBlockScope,
   objectContextId,
 ) {
-  if (isTypeScriptEnabled) {
-    tsStartParseObjPropValue();
-  } else if (isFlowEnabled) {
-    flowStartParseObjPropValue();
+  if (_base.isTypeScriptEnabled) {
+    _typescript.tsStartParseObjPropValue.call(void 0, );
+  } else if (_base.isFlowEnabled) {
+    _flow.flowStartParseObjPropValue.call(void 0, );
   }
   const wasMethod = parseObjectMethod(isPattern, objectContextId);
   if (!wasMethod) {
@@ -893,70 +893,70 @@ function parseObjPropValue(
   }
 }
 
-export function parsePropertyName(objectContextId) {
-  if (isFlowEnabled) {
-    flowParseVariance();
+ function parsePropertyName(objectContextId) {
+  if (_base.isFlowEnabled) {
+    _flow.flowParseVariance.call(void 0, );
   }
-  if (eat(tt.bracketL)) {
-    state.tokens[state.tokens.length - 1].contextId = objectContextId;
+  if (_index3.eat.call(void 0, _types3.TokenType.bracketL)) {
+    _base.state.tokens[_base.state.tokens.length - 1].contextId = objectContextId;
     parseMaybeAssign();
-    expect(tt.bracketR);
-    state.tokens[state.tokens.length - 1].contextId = objectContextId;
+    _util.expect.call(void 0, _types3.TokenType.bracketR);
+    _base.state.tokens[_base.state.tokens.length - 1].contextId = objectContextId;
   } else {
-    if (match(tt.num) || match(tt.string) || match(tt.bigint) || match(tt.decimal)) {
+    if (_index3.match.call(void 0, _types3.TokenType.num) || _index3.match.call(void 0, _types3.TokenType.string) || _index3.match.call(void 0, _types3.TokenType.bigint) || _index3.match.call(void 0, _types3.TokenType.decimal)) {
       parseExprAtom();
     } else {
       parseMaybePrivateName();
     }
 
-    state.tokens[state.tokens.length - 1].identifierRole = IdentifierRole.ObjectKey;
-    state.tokens[state.tokens.length - 1].contextId = objectContextId;
+    _base.state.tokens[_base.state.tokens.length - 1].identifierRole = _index3.IdentifierRole.ObjectKey;
+    _base.state.tokens[_base.state.tokens.length - 1].contextId = objectContextId;
   }
-}
+} exports.parsePropertyName = parsePropertyName;
 
 // Parse object or class method.
-export function parseMethod(functionStart, isConstructor) {
-  const funcContextId = getNextContextId();
+ function parseMethod(functionStart, isConstructor) {
+  const funcContextId = _base.getNextContextId.call(void 0, );
 
-  state.scopeDepth++;
-  const startTokenIndex = state.tokens.length;
+  _base.state.scopeDepth++;
+  const startTokenIndex = _base.state.tokens.length;
   const allowModifiers = isConstructor; // For TypeScript parameter properties
-  parseFunctionParams(allowModifiers, funcContextId);
+  _statement.parseFunctionParams.call(void 0, allowModifiers, funcContextId);
   parseFunctionBodyAndFinish(functionStart, funcContextId);
-  const endTokenIndex = state.tokens.length;
-  state.scopes.push(new Scope(startTokenIndex, endTokenIndex, true));
-  state.scopeDepth--;
-}
+  const endTokenIndex = _base.state.tokens.length;
+  _base.state.scopes.push(new (0, _state.Scope)(startTokenIndex, endTokenIndex, true));
+  _base.state.scopeDepth--;
+} exports.parseMethod = parseMethod;
 
 // Parse arrow function expression.
 // If the parameters are provided, they will be converted to an
 // assignable list.
-export function parseArrowExpression(startTokenIndex) {
+ function parseArrowExpression(startTokenIndex) {
   parseFunctionBody(true);
-  const endTokenIndex = state.tokens.length;
-  state.scopes.push(new Scope(startTokenIndex, endTokenIndex, true));
-  state.scopeDepth--;
-}
+  const endTokenIndex = _base.state.tokens.length;
+  _base.state.scopes.push(new (0, _state.Scope)(startTokenIndex, endTokenIndex, true));
+  _base.state.scopeDepth--;
+} exports.parseArrowExpression = parseArrowExpression;
 
-export function parseFunctionBodyAndFinish(functionStart, funcContextId = 0) {
-  if (isTypeScriptEnabled) {
-    tsParseFunctionBodyAndFinish(functionStart, funcContextId);
-  } else if (isFlowEnabled) {
-    flowParseFunctionBodyAndFinish(funcContextId);
+ function parseFunctionBodyAndFinish(functionStart, funcContextId = 0) {
+  if (_base.isTypeScriptEnabled) {
+    _typescript.tsParseFunctionBodyAndFinish.call(void 0, functionStart, funcContextId);
+  } else if (_base.isFlowEnabled) {
+    _flow.flowParseFunctionBodyAndFinish.call(void 0, funcContextId);
   } else {
     parseFunctionBody(false, funcContextId);
   }
-}
+} exports.parseFunctionBodyAndFinish = parseFunctionBodyAndFinish;
 
-export function parseFunctionBody(allowExpression, funcContextId = 0) {
-  const isExpression = allowExpression && !match(tt.braceL);
+ function parseFunctionBody(allowExpression, funcContextId = 0) {
+  const isExpression = allowExpression && !_index3.match.call(void 0, _types3.TokenType.braceL);
 
   if (isExpression) {
     parseMaybeAssign();
   } else {
-    parseBlock(true /* isFunctionScope */, funcContextId);
+    _statement.parseBlock.call(void 0, true /* isFunctionScope */, funcContextId);
   }
-}
+} exports.parseFunctionBody = parseFunctionBody;
 
 // Parses a comma-separated list of expressions, and returns them as
 // an array. `close` is the token type that ends the list, and
@@ -966,36 +966,36 @@ export function parseFunctionBody(allowExpression, funcContextId = 0) {
 
 function parseExprList(close, allowEmpty = false) {
   let first = true;
-  while (!eat(close) && !state.error) {
+  while (!_index3.eat.call(void 0, close) && !_base.state.error) {
     if (first) {
       first = false;
     } else {
-      expect(tt.comma);
-      if (eat(close)) break;
+      _util.expect.call(void 0, _types3.TokenType.comma);
+      if (_index3.eat.call(void 0, close)) break;
     }
     parseExprListItem(allowEmpty);
   }
 }
 
 function parseExprListItem(allowEmpty) {
-  if (allowEmpty && match(tt.comma)) {
+  if (allowEmpty && _index3.match.call(void 0, _types3.TokenType.comma)) {
     // Empty item; nothing more to parse for this item.
-  } else if (match(tt.ellipsis)) {
-    parseSpread();
+  } else if (_index3.match.call(void 0, _types3.TokenType.ellipsis)) {
+    _lval.parseSpread.call(void 0, );
     parseParenItem();
-  } else if (match(tt.question)) {
+  } else if (_index3.match.call(void 0, _types3.TokenType.question)) {
     // Partial function application proposal.
-    next();
+    _index3.next.call(void 0, );
   } else {
     parseMaybeAssign(false, true);
   }
 }
 
 // Parse the next token as an identifier.
-export function parseIdentifier() {
-  next();
-  state.tokens[state.tokens.length - 1].type = tt.name;
-}
+ function parseIdentifier() {
+  _index3.next.call(void 0, );
+  _base.state.tokens[_base.state.tokens.length - 1].type = _types3.TokenType.name;
+} exports.parseIdentifier = parseIdentifier;
 
 // Parses await expression inside async function.
 function parseAwait() {
@@ -1004,19 +1004,19 @@ function parseAwait() {
 
 // Parses yield expression inside generator.
 function parseYield() {
-  next();
-  if (!match(tt.semi) && !canInsertSemicolon()) {
-    eat(tt.star);
+  _index3.next.call(void 0, );
+  if (!_index3.match.call(void 0, _types3.TokenType.semi) && !_util.canInsertSemicolon.call(void 0, )) {
+    _index3.eat.call(void 0, _types3.TokenType.star);
     parseMaybeAssign();
   }
 }
 
 // https://github.com/tc39/proposal-js-module-blocks
 function parseModuleExpression() {
-  expectContextual(ContextualKeyword._module);
-  expect(tt.braceL);
+  _util.expectContextual.call(void 0, _keywords.ContextualKeyword._module);
+  _util.expect.call(void 0, _types3.TokenType.braceL);
   // For now, just call parseBlockBody to parse the block. In the future when we
   // implement full support, we'll want to emit scopes and possibly other
   // information.
-  parseBlockBody(tt.braceR);
+  _statement.parseBlockBody.call(void 0, _types3.TokenType.braceR);
 }

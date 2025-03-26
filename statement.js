@@ -1,101 +1,101 @@
-/* eslint max-len: 0 */
+"use strict";Object.defineProperty(exports, "__esModule", {value: true});/* eslint max-len: 0 */
 
-import {File} from "../index";
-import {
-  flowAfterParseClassSuper,
-  flowAfterParseVarHead,
-  flowParseExportDeclaration,
-  flowParseExportStar,
-  flowParseIdentifierStatement,
-  flowParseImportSpecifier,
-  flowParseTypeAnnotation,
-  flowParseTypeParameterDeclaration,
-  flowShouldDisallowExportDefaultSpecifier,
-  flowShouldParseExportDeclaration,
-  flowShouldParseExportStar,
-  flowStartParseFunctionParams,
-  flowStartParseImportSpecifiers,
-  flowTryParseExportDefaultExpression,
-  flowTryParseStatement,
-} from "../plugins/flow";
-import {
-  tsAfterParseClassSuper,
-  tsAfterParseVarHead,
-  tsIsDeclarationStart,
-  tsParseExportDeclaration,
-  tsParseExportSpecifier,
-  tsParseIdentifierStatement,
-  tsParseImportEqualsDeclaration,
-  tsParseImportSpecifier,
-  tsParseMaybeDecoratorArguments,
-  tsParseModifiers,
-  tsStartParseFunctionParams,
-  tsTryParseClassMemberWithIsStatic,
-  tsTryParseExport,
-  tsTryParseExportDefaultExpression,
-  tsTryParseStatementContent,
-  tsTryParseTypeAnnotation,
-  tsTryParseTypeParameters,
-} from "../plugins/typescript";
-import {
-  eat,
-  eatTypeToken,
-  IdentifierRole,
-  lookaheadType,
-  lookaheadTypeAndKeyword,
-  match,
-  next,
-  nextTokenStart,
-  nextTokenStartSince,
-  popTypeContext,
-  pushTypeContext,
-} from "../tokenizer";
-import {ContextualKeyword} from "../tokenizer/keywords";
-import {Scope} from "../tokenizer/state";
-import { TokenType as tt} from "../tokenizer/types";
-import {charCodes} from "../util/charcodes";
-import {getNextContextId, input, isFlowEnabled, isTypeScriptEnabled, state} from "./base";
-import {
-  parseCallExpressionArguments,
-  parseExprAtom,
-  parseExpression,
-  parseExprSubscripts,
-  parseFunctionBodyAndFinish,
-  parseIdentifier,
-  parseMaybeAssign,
-  parseMethod,
-  parseObj,
-  parseParenExpression,
-  parsePropertyName,
-} from "./expression";
-import {
-  parseBindingAtom,
-  parseBindingIdentifier,
-  parseBindingList,
-  parseImportedIdentifier,
-} from "./lval";
-import {
-  canInsertSemicolon,
-  eatContextual,
-  expect,
-  expectContextual,
-  hasFollowingLineBreak,
-  hasPrecedingLineBreak,
-  isContextual,
-  isLineTerminator,
-  isLookaheadContextual,
-  semicolon,
-  unexpected,
-} from "./util";
+var _index = require('../index');
 
-export function parseTopLevel() {
-  parseBlockBody(tt.eof);
-  state.scopes.push(new Scope(0, state.tokens.length, true));
-  if (state.scopeDepth !== 0) {
-    throw new Error(`Invalid scope depth at end of file: ${state.scopeDepth}`);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var _flow = require('../plugins/flow');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var _typescript = require('../plugins/typescript');
+
+
+
+
+
+
+
+
+
+
+
+
+var _tokenizer = require('../tokenizer');
+var _keywords = require('../tokenizer/keywords');
+var _state = require('../tokenizer/state');
+var _types = require('../tokenizer/types');
+var _charcodes = require('../util/charcodes');
+var _base = require('./base');
+
+
+
+
+
+
+
+
+
+
+
+
+var _expression = require('./expression');
+
+
+
+
+
+var _lval = require('./lval');
+
+
+
+
+
+
+
+
+
+
+
+
+var _util = require('./util');
+
+ function parseTopLevel() {
+  parseBlockBody(_types.TokenType.eof);
+  _base.state.scopes.push(new (0, _state.Scope)(0, _base.state.tokens.length, true));
+  if (_base.state.scopeDepth !== 0) {
+    throw new Error(`Invalid scope depth at end of file: ${_base.state.scopeDepth}`);
   }
-  return new File(state.tokens, state.scopes);
-}
+  return new (0, _index.File)(_base.state.tokens, _base.state.scopes);
+} exports.parseTopLevel = parseTopLevel;
 
 // Parse a single statement.
 //
@@ -104,127 +104,127 @@ export function parseTopLevel() {
 // `if (foo) /blah/.exec(foo)`, where looking at the previous token
 // does not help.
 
-export function parseStatement(declaration) {
-  if (isFlowEnabled) {
-    if (flowTryParseStatement()) {
+ function parseStatement(declaration) {
+  if (_base.isFlowEnabled) {
+    if (_flow.flowTryParseStatement.call(void 0, )) {
       return;
     }
   }
-  if (match(tt.at)) {
+  if (_tokenizer.match.call(void 0, _types.TokenType.at)) {
     parseDecorators();
   }
   parseStatementContent(declaration);
-}
+} exports.parseStatement = parseStatement;
 
 function parseStatementContent(declaration) {
-  if (isTypeScriptEnabled) {
-    if (tsTryParseStatementContent()) {
+  if (_base.isTypeScriptEnabled) {
+    if (_typescript.tsTryParseStatementContent.call(void 0, )) {
       return;
     }
   }
 
-  const starttype = state.type;
+  const starttype = _base.state.type;
 
   // Most types of statements are recognized by the keyword they
   // start with. Many are trivial to parse, some require a bit of
   // complexity.
 
   switch (starttype) {
-    case tt._break:
-    case tt._continue:
+    case _types.TokenType._break:
+    case _types.TokenType._continue:
       parseBreakContinueStatement();
       return;
-    case tt._debugger:
+    case _types.TokenType._debugger:
       parseDebuggerStatement();
       return;
-    case tt._do:
+    case _types.TokenType._do:
       parseDoStatement();
       return;
-    case tt._for:
+    case _types.TokenType._for:
       parseForStatement();
       return;
-    case tt._function:
-      if (lookaheadType() === tt.dot) break;
-      if (!declaration) unexpected();
+    case _types.TokenType._function:
+      if (_tokenizer.lookaheadType.call(void 0, ) === _types.TokenType.dot) break;
+      if (!declaration) _util.unexpected.call(void 0, );
       parseFunctionStatement();
       return;
 
-    case tt._class:
-      if (!declaration) unexpected();
+    case _types.TokenType._class:
+      if (!declaration) _util.unexpected.call(void 0, );
       parseClass(true);
       return;
 
-    case tt._if:
+    case _types.TokenType._if:
       parseIfStatement();
       return;
-    case tt._return:
+    case _types.TokenType._return:
       parseReturnStatement();
       return;
-    case tt._switch:
+    case _types.TokenType._switch:
       parseSwitchStatement();
       return;
-    case tt._throw:
+    case _types.TokenType._throw:
       parseThrowStatement();
       return;
-    case tt._try:
+    case _types.TokenType._try:
       parseTryStatement();
       return;
 
-    case tt._let:
-    case tt._const:
-      if (!declaration) unexpected(); // NOTE: falls through to _var
+    case _types.TokenType._let:
+    case _types.TokenType._const:
+      if (!declaration) _util.unexpected.call(void 0, ); // NOTE: falls through to _var
 
-    case tt._var:
-      parseVarStatement(starttype !== tt._var);
+    case _types.TokenType._var:
+      parseVarStatement(starttype !== _types.TokenType._var);
       return;
 
-    case tt._while:
+    case _types.TokenType._while:
       parseWhileStatement();
       return;
-    case tt.braceL:
+    case _types.TokenType.braceL:
       parseBlock();
       return;
-    case tt.semi:
+    case _types.TokenType.semi:
       parseEmptyStatement();
       return;
-    case tt._export:
-    case tt._import: {
-      const nextType = lookaheadType();
-      if (nextType === tt.parenL || nextType === tt.dot) {
+    case _types.TokenType._export:
+    case _types.TokenType._import: {
+      const nextType = _tokenizer.lookaheadType.call(void 0, );
+      if (nextType === _types.TokenType.parenL || nextType === _types.TokenType.dot) {
         break;
       }
-      next();
-      if (starttype === tt._import) {
+      _tokenizer.next.call(void 0, );
+      if (starttype === _types.TokenType._import) {
         parseImport();
       } else {
         parseExport();
       }
       return;
     }
-    case tt.name:
-      if (state.contextualKeyword === ContextualKeyword._async) {
-        const functionStart = state.start;
+    case _types.TokenType.name:
+      if (_base.state.contextualKeyword === _keywords.ContextualKeyword._async) {
+        const functionStart = _base.state.start;
         // peek ahead and see if next token is a function
-        const snapshot = state.snapshot();
-        next();
-        if (match(tt._function) && !canInsertSemicolon()) {
-          expect(tt._function);
+        const snapshot = _base.state.snapshot();
+        _tokenizer.next.call(void 0, );
+        if (_tokenizer.match.call(void 0, _types.TokenType._function) && !_util.canInsertSemicolon.call(void 0, )) {
+          _util.expect.call(void 0, _types.TokenType._function);
           parseFunction(functionStart, true);
           return;
         } else {
-          state.restoreFromSnapshot(snapshot);
+          _base.state.restoreFromSnapshot(snapshot);
         }
       } else if (
-        state.contextualKeyword === ContextualKeyword._using &&
-        !hasFollowingLineBreak() &&
+        _base.state.contextualKeyword === _keywords.ContextualKeyword._using &&
+        !_util.hasFollowingLineBreak.call(void 0, ) &&
         // Statements like `using[0]` and `using in foo` aren't actual using
         // declarations.
-        lookaheadType() === tt.name
+        _tokenizer.lookaheadType.call(void 0, ) === _types.TokenType.name
       ) {
         parseVarStatement(true);
         return;
       } else if (startsAwaitUsing()) {
-        expectContextual(ContextualKeyword._await);
+        _util.expectContextual.call(void 0, _keywords.ContextualKeyword._await);
         parseVarStatement(true);
         return;
       }
@@ -238,20 +238,20 @@ function parseStatementContent(declaration) {
   // simply start parsing an expression, and afterwards, if the
   // next token is a colon and the expression was a simple
   // Identifier node, we switch to interpreting it as a label.
-  const initialTokensLength = state.tokens.length;
-  parseExpression();
+  const initialTokensLength = _base.state.tokens.length;
+  _expression.parseExpression.call(void 0, );
   let simpleName = null;
-  if (state.tokens.length === initialTokensLength + 1) {
-    const token = state.tokens[state.tokens.length - 1];
-    if (token.type === tt.name) {
+  if (_base.state.tokens.length === initialTokensLength + 1) {
+    const token = _base.state.tokens[_base.state.tokens.length - 1];
+    if (token.type === _types.TokenType.name) {
       simpleName = token.contextualKeyword;
     }
   }
   if (simpleName == null) {
-    semicolon();
+    _util.semicolon.call(void 0, );
     return;
   }
-  if (eat(tt.colon)) {
+  if (_tokenizer.eat.call(void 0, _types.TokenType.colon)) {
     parseLabeledStatement();
   } else {
     // This was an identifier, so we might want to handle flow/typescript-specific cases.
@@ -281,88 +281,88 @@ function parseStatementContent(declaration) {
  * future, this could be optimized with a character-based approach.
  */
 function startsAwaitUsing() {
-  if (!isContextual(ContextualKeyword._await)) {
+  if (!_util.isContextual.call(void 0, _keywords.ContextualKeyword._await)) {
     return false;
   }
-  const snapshot = state.snapshot();
+  const snapshot = _base.state.snapshot();
   // await
-  next();
-  if (!isContextual(ContextualKeyword._using) || hasPrecedingLineBreak()) {
-    state.restoreFromSnapshot(snapshot);
+  _tokenizer.next.call(void 0, );
+  if (!_util.isContextual.call(void 0, _keywords.ContextualKeyword._using) || _util.hasPrecedingLineBreak.call(void 0, )) {
+    _base.state.restoreFromSnapshot(snapshot);
     return false;
   }
   // using
-  next();
-  if (!match(tt.name) || hasPrecedingLineBreak()) {
-    state.restoreFromSnapshot(snapshot);
+  _tokenizer.next.call(void 0, );
+  if (!_tokenizer.match.call(void 0, _types.TokenType.name) || _util.hasPrecedingLineBreak.call(void 0, )) {
+    _base.state.restoreFromSnapshot(snapshot);
     return false;
   }
-  state.restoreFromSnapshot(snapshot);
+  _base.state.restoreFromSnapshot(snapshot);
   return true;
 }
 
-export function parseDecorators() {
-  while (match(tt.at)) {
+ function parseDecorators() {
+  while (_tokenizer.match.call(void 0, _types.TokenType.at)) {
     parseDecorator();
   }
-}
+} exports.parseDecorators = parseDecorators;
 
 function parseDecorator() {
-  next();
-  if (eat(tt.parenL)) {
-    parseExpression();
-    expect(tt.parenR);
+  _tokenizer.next.call(void 0, );
+  if (_tokenizer.eat.call(void 0, _types.TokenType.parenL)) {
+    _expression.parseExpression.call(void 0, );
+    _util.expect.call(void 0, _types.TokenType.parenR);
   } else {
-    parseIdentifier();
-    while (eat(tt.dot)) {
-      parseIdentifier();
+    _expression.parseIdentifier.call(void 0, );
+    while (_tokenizer.eat.call(void 0, _types.TokenType.dot)) {
+      _expression.parseIdentifier.call(void 0, );
     }
     parseMaybeDecoratorArguments();
   }
 }
 
 function parseMaybeDecoratorArguments() {
-  if (isTypeScriptEnabled) {
-    tsParseMaybeDecoratorArguments();
+  if (_base.isTypeScriptEnabled) {
+    _typescript.tsParseMaybeDecoratorArguments.call(void 0, );
   } else {
     baseParseMaybeDecoratorArguments();
   }
 }
 
-export function baseParseMaybeDecoratorArguments() {
-  if (eat(tt.parenL)) {
-    parseCallExpressionArguments();
+ function baseParseMaybeDecoratorArguments() {
+  if (_tokenizer.eat.call(void 0, _types.TokenType.parenL)) {
+    _expression.parseCallExpressionArguments.call(void 0, );
   }
-}
+} exports.baseParseMaybeDecoratorArguments = baseParseMaybeDecoratorArguments;
 
 function parseBreakContinueStatement() {
-  next();
-  if (!isLineTerminator()) {
-    parseIdentifier();
-    semicolon();
+  _tokenizer.next.call(void 0, );
+  if (!_util.isLineTerminator.call(void 0, )) {
+    _expression.parseIdentifier.call(void 0, );
+    _util.semicolon.call(void 0, );
   }
 }
 
 function parseDebuggerStatement() {
-  next();
-  semicolon();
+  _tokenizer.next.call(void 0, );
+  _util.semicolon.call(void 0, );
 }
 
 function parseDoStatement() {
-  next();
+  _tokenizer.next.call(void 0, );
   parseStatement(false);
-  expect(tt._while);
-  parseParenExpression();
-  eat(tt.semi);
+  _util.expect.call(void 0, _types.TokenType._while);
+  _expression.parseParenExpression.call(void 0, );
+  _tokenizer.eat.call(void 0, _types.TokenType.semi);
 }
 
 function parseForStatement() {
-  state.scopeDepth++;
-  const startTokenIndex = state.tokens.length;
+  _base.state.scopeDepth++;
+  const startTokenIndex = _base.state.tokens.length;
   parseAmbiguousForStatement();
-  const endTokenIndex = state.tokens.length;
-  state.scopes.push(new Scope(startTokenIndex, endTokenIndex, false));
-  state.scopeDepth--;
+  const endTokenIndex = _base.state.tokens.length;
+  _base.state.scopes.push(new (0, _state.Scope)(startTokenIndex, endTokenIndex, false));
+  _base.state.scopeDepth--;
 }
 
 /**
@@ -371,12 +371,12 @@ function parseForStatement() {
  * https://github.com/tc39/proposal-explicit-resource-management
  */
 function isUsingInLoop() {
-  if (!isContextual(ContextualKeyword._using)) {
+  if (!_util.isContextual.call(void 0, _keywords.ContextualKeyword._using)) {
     return false;
   }
   // This must be `for (using of`, where `using` is the name of the loop
   // variable.
-  if (isLookaheadContextual(ContextualKeyword._of)) {
+  if (_util.isLookaheadContextual.call(void 0, _keywords.ContextualKeyword._of)) {
     return false;
   }
   return true;
@@ -390,31 +390,31 @@ function isUsingInLoop() {
 // part (semicolon immediately after the opening parenthesis), it
 // is a regular `for` loop.
 function parseAmbiguousForStatement() {
-  next();
+  _tokenizer.next.call(void 0, );
 
   let forAwait = false;
-  if (isContextual(ContextualKeyword._await)) {
+  if (_util.isContextual.call(void 0, _keywords.ContextualKeyword._await)) {
     forAwait = true;
-    next();
+    _tokenizer.next.call(void 0, );
   }
-  expect(tt.parenL);
+  _util.expect.call(void 0, _types.TokenType.parenL);
 
-  if (match(tt.semi)) {
+  if (_tokenizer.match.call(void 0, _types.TokenType.semi)) {
     if (forAwait) {
-      unexpected();
+      _util.unexpected.call(void 0, );
     }
     parseFor();
     return;
   }
 
   const isAwaitUsing = startsAwaitUsing();
-  if (isAwaitUsing || match(tt._var) || match(tt._let) || match(tt._const) || isUsingInLoop()) {
+  if (isAwaitUsing || _tokenizer.match.call(void 0, _types.TokenType._var) || _tokenizer.match.call(void 0, _types.TokenType._let) || _tokenizer.match.call(void 0, _types.TokenType._const) || isUsingInLoop()) {
     if (isAwaitUsing) {
-      expectContextual(ContextualKeyword._await);
+      _util.expectContextual.call(void 0, _keywords.ContextualKeyword._await);
     }
-    next();
-    parseVar(true, state.type !== tt._var);
-    if (match(tt._in) || isContextual(ContextualKeyword._of)) {
+    _tokenizer.next.call(void 0, );
+    parseVar(true, _base.state.type !== _types.TokenType._var);
+    if (_tokenizer.match.call(void 0, _types.TokenType._in) || _util.isContextual.call(void 0, _keywords.ContextualKeyword._of)) {
       parseForIn(forAwait);
       return;
     }
@@ -422,128 +422,128 @@ function parseAmbiguousForStatement() {
     return;
   }
 
-  parseExpression(true);
-  if (match(tt._in) || isContextual(ContextualKeyword._of)) {
+  _expression.parseExpression.call(void 0, true);
+  if (_tokenizer.match.call(void 0, _types.TokenType._in) || _util.isContextual.call(void 0, _keywords.ContextualKeyword._of)) {
     parseForIn(forAwait);
     return;
   }
   if (forAwait) {
-    unexpected();
+    _util.unexpected.call(void 0, );
   }
   parseFor();
 }
 
 function parseFunctionStatement() {
-  const functionStart = state.start;
-  next();
+  const functionStart = _base.state.start;
+  _tokenizer.next.call(void 0, );
   parseFunction(functionStart, true);
 }
 
 function parseIfStatement() {
-  next();
-  parseParenExpression();
+  _tokenizer.next.call(void 0, );
+  _expression.parseParenExpression.call(void 0, );
   parseStatement(false);
-  if (eat(tt._else)) {
+  if (_tokenizer.eat.call(void 0, _types.TokenType._else)) {
     parseStatement(false);
   }
 }
 
 function parseReturnStatement() {
-  next();
+  _tokenizer.next.call(void 0, );
 
   // In `return` (and `break`/`continue`), the keywords with
   // optional arguments, we eagerly look for a semicolon or the
   // possibility to insert one.
 
-  if (!isLineTerminator()) {
-    parseExpression();
-    semicolon();
+  if (!_util.isLineTerminator.call(void 0, )) {
+    _expression.parseExpression.call(void 0, );
+    _util.semicolon.call(void 0, );
   }
 }
 
 function parseSwitchStatement() {
-  next();
-  parseParenExpression();
-  state.scopeDepth++;
-  const startTokenIndex = state.tokens.length;
-  expect(tt.braceL);
+  _tokenizer.next.call(void 0, );
+  _expression.parseParenExpression.call(void 0, );
+  _base.state.scopeDepth++;
+  const startTokenIndex = _base.state.tokens.length;
+  _util.expect.call(void 0, _types.TokenType.braceL);
 
   // Don't bother validation; just go through any sequence of cases, defaults, and statements.
-  while (!match(tt.braceR) && !state.error) {
-    if (match(tt._case) || match(tt._default)) {
-      const isCase = match(tt._case);
-      next();
+  while (!_tokenizer.match.call(void 0, _types.TokenType.braceR) && !_base.state.error) {
+    if (_tokenizer.match.call(void 0, _types.TokenType._case) || _tokenizer.match.call(void 0, _types.TokenType._default)) {
+      const isCase = _tokenizer.match.call(void 0, _types.TokenType._case);
+      _tokenizer.next.call(void 0, );
       if (isCase) {
-        parseExpression();
+        _expression.parseExpression.call(void 0, );
       }
-      expect(tt.colon);
+      _util.expect.call(void 0, _types.TokenType.colon);
     } else {
       parseStatement(true);
     }
   }
-  next(); // Closing brace
-  const endTokenIndex = state.tokens.length;
-  state.scopes.push(new Scope(startTokenIndex, endTokenIndex, false));
-  state.scopeDepth--;
+  _tokenizer.next.call(void 0, ); // Closing brace
+  const endTokenIndex = _base.state.tokens.length;
+  _base.state.scopes.push(new (0, _state.Scope)(startTokenIndex, endTokenIndex, false));
+  _base.state.scopeDepth--;
 }
 
 function parseThrowStatement() {
-  next();
-  parseExpression();
-  semicolon();
+  _tokenizer.next.call(void 0, );
+  _expression.parseExpression.call(void 0, );
+  _util.semicolon.call(void 0, );
 }
 
 function parseCatchClauseParam() {
-  parseBindingAtom(true /* isBlockScope */);
+  _lval.parseBindingAtom.call(void 0, true /* isBlockScope */);
 
-  if (isTypeScriptEnabled) {
-    tsTryParseTypeAnnotation();
+  if (_base.isTypeScriptEnabled) {
+    _typescript.tsTryParseTypeAnnotation.call(void 0, );
   }
 }
 
 function parseTryStatement() {
-  next();
+  _tokenizer.next.call(void 0, );
 
   parseBlock();
 
-  if (match(tt._catch)) {
-    next();
+  if (_tokenizer.match.call(void 0, _types.TokenType._catch)) {
+    _tokenizer.next.call(void 0, );
     let catchBindingStartTokenIndex = null;
-    if (match(tt.parenL)) {
-      state.scopeDepth++;
-      catchBindingStartTokenIndex = state.tokens.length;
-      expect(tt.parenL);
+    if (_tokenizer.match.call(void 0, _types.TokenType.parenL)) {
+      _base.state.scopeDepth++;
+      catchBindingStartTokenIndex = _base.state.tokens.length;
+      _util.expect.call(void 0, _types.TokenType.parenL);
       parseCatchClauseParam();
-      expect(tt.parenR);
+      _util.expect.call(void 0, _types.TokenType.parenR);
     }
     parseBlock();
     if (catchBindingStartTokenIndex != null) {
       // We need a special scope for the catch binding which includes the binding itself and the
       // catch block.
-      const endTokenIndex = state.tokens.length;
-      state.scopes.push(new Scope(catchBindingStartTokenIndex, endTokenIndex, false));
-      state.scopeDepth--;
+      const endTokenIndex = _base.state.tokens.length;
+      _base.state.scopes.push(new (0, _state.Scope)(catchBindingStartTokenIndex, endTokenIndex, false));
+      _base.state.scopeDepth--;
     }
   }
-  if (eat(tt._finally)) {
+  if (_tokenizer.eat.call(void 0, _types.TokenType._finally)) {
     parseBlock();
   }
 }
 
-export function parseVarStatement(isBlockScope) {
-  next();
+ function parseVarStatement(isBlockScope) {
+  _tokenizer.next.call(void 0, );
   parseVar(false, isBlockScope);
-  semicolon();
-}
+  _util.semicolon.call(void 0, );
+} exports.parseVarStatement = parseVarStatement;
 
 function parseWhileStatement() {
-  next();
-  parseParenExpression();
+  _tokenizer.next.call(void 0, );
+  _expression.parseParenExpression.call(void 0, );
   parseStatement(false);
 }
 
 function parseEmptyStatement() {
-  next();
+  _tokenizer.next.call(void 0, );
 }
 
 function parseLabeledStatement() {
@@ -555,52 +555,52 @@ function parseLabeledStatement() {
  * to handle statements like "declare".
  */
 function parseIdentifierStatement(contextualKeyword) {
-  if (isTypeScriptEnabled) {
-    tsParseIdentifierStatement(contextualKeyword);
-  } else if (isFlowEnabled) {
-    flowParseIdentifierStatement(contextualKeyword);
+  if (_base.isTypeScriptEnabled) {
+    _typescript.tsParseIdentifierStatement.call(void 0, contextualKeyword);
+  } else if (_base.isFlowEnabled) {
+    _flow.flowParseIdentifierStatement.call(void 0, contextualKeyword);
   } else {
-    semicolon();
+    _util.semicolon.call(void 0, );
   }
 }
 
 // Parse a semicolon-enclosed block of statements.
-export function parseBlock(isFunctionScope = false, contextId = 0) {
-  const startTokenIndex = state.tokens.length;
-  state.scopeDepth++;
-  expect(tt.braceL);
+ function parseBlock(isFunctionScope = false, contextId = 0) {
+  const startTokenIndex = _base.state.tokens.length;
+  _base.state.scopeDepth++;
+  _util.expect.call(void 0, _types.TokenType.braceL);
   if (contextId) {
-    state.tokens[state.tokens.length - 1].contextId = contextId;
+    _base.state.tokens[_base.state.tokens.length - 1].contextId = contextId;
   }
-  parseBlockBody(tt.braceR);
+  parseBlockBody(_types.TokenType.braceR);
   if (contextId) {
-    state.tokens[state.tokens.length - 1].contextId = contextId;
+    _base.state.tokens[_base.state.tokens.length - 1].contextId = contextId;
   }
-  const endTokenIndex = state.tokens.length;
-  state.scopes.push(new Scope(startTokenIndex, endTokenIndex, isFunctionScope));
-  state.scopeDepth--;
-}
+  const endTokenIndex = _base.state.tokens.length;
+  _base.state.scopes.push(new (0, _state.Scope)(startTokenIndex, endTokenIndex, isFunctionScope));
+  _base.state.scopeDepth--;
+} exports.parseBlock = parseBlock;
 
-export function parseBlockBody(end) {
-  while (!eat(end) && !state.error) {
+ function parseBlockBody(end) {
+  while (!_tokenizer.eat.call(void 0, end) && !_base.state.error) {
     parseStatement(true);
   }
-}
+} exports.parseBlockBody = parseBlockBody;
 
 // Parse a regular `for` loop. The disambiguation code in
 // `parseStatement` will already have parsed the init statement or
 // expression.
 
 function parseFor() {
-  expect(tt.semi);
-  if (!match(tt.semi)) {
-    parseExpression();
+  _util.expect.call(void 0, _types.TokenType.semi);
+  if (!_tokenizer.match.call(void 0, _types.TokenType.semi)) {
+    _expression.parseExpression.call(void 0, );
   }
-  expect(tt.semi);
-  if (!match(tt.parenR)) {
-    parseExpression();
+  _util.expect.call(void 0, _types.TokenType.semi);
+  if (!_tokenizer.match.call(void 0, _types.TokenType.parenR)) {
+    _expression.parseExpression.call(void 0, );
   }
-  expect(tt.parenR);
+  _util.expect.call(void 0, _types.TokenType.parenR);
   parseStatement(false);
 }
 
@@ -609,12 +609,12 @@ function parseFor() {
 
 function parseForIn(forAwait) {
   if (forAwait) {
-    eatContextual(ContextualKeyword._of);
+    _util.eatContextual.call(void 0, _keywords.ContextualKeyword._of);
   } else {
-    next();
+    _tokenizer.next.call(void 0, );
   }
-  parseExpression();
-  expect(tt.parenR);
+  _expression.parseExpression.call(void 0, );
+  _util.expect.call(void 0, _types.TokenType.parenR);
   parseStatement(false);
 }
 
@@ -623,168 +623,168 @@ function parseForIn(forAwait) {
 function parseVar(isFor, isBlockScope) {
   while (true) {
     parseVarHead(isBlockScope);
-    if (eat(tt.eq)) {
-      const eqIndex = state.tokens.length - 1;
-      parseMaybeAssign(isFor);
-      state.tokens[eqIndex].rhsEndIndex = state.tokens.length;
+    if (_tokenizer.eat.call(void 0, _types.TokenType.eq)) {
+      const eqIndex = _base.state.tokens.length - 1;
+      _expression.parseMaybeAssign.call(void 0, isFor);
+      _base.state.tokens[eqIndex].rhsEndIndex = _base.state.tokens.length;
     }
-    if (!eat(tt.comma)) {
+    if (!_tokenizer.eat.call(void 0, _types.TokenType.comma)) {
       break;
     }
   }
 }
 
 function parseVarHead(isBlockScope) {
-  parseBindingAtom(isBlockScope);
-  if (isTypeScriptEnabled) {
-    tsAfterParseVarHead();
-  } else if (isFlowEnabled) {
-    flowAfterParseVarHead();
+  _lval.parseBindingAtom.call(void 0, isBlockScope);
+  if (_base.isTypeScriptEnabled) {
+    _typescript.tsAfterParseVarHead.call(void 0, );
+  } else if (_base.isFlowEnabled) {
+    _flow.flowAfterParseVarHead.call(void 0, );
   }
 }
 
 // Parse a function declaration or literal (depending on the
 // `isStatement` parameter).
 
-export function parseFunction(
+ function parseFunction(
   functionStart,
   isStatement,
   optionalId = false,
 ) {
-  if (match(tt.star)) {
-    next();
+  if (_tokenizer.match.call(void 0, _types.TokenType.star)) {
+    _tokenizer.next.call(void 0, );
   }
 
-  if (isStatement && !optionalId && !match(tt.name) && !match(tt._yield)) {
-    unexpected();
+  if (isStatement && !optionalId && !_tokenizer.match.call(void 0, _types.TokenType.name) && !_tokenizer.match.call(void 0, _types.TokenType._yield)) {
+    _util.unexpected.call(void 0, );
   }
 
   let nameScopeStartTokenIndex = null;
 
-  if (match(tt.name)) {
+  if (_tokenizer.match.call(void 0, _types.TokenType.name)) {
     // Expression-style functions should limit their name's scope to the function body, so we make
     // a new function scope to enforce that.
     if (!isStatement) {
-      nameScopeStartTokenIndex = state.tokens.length;
-      state.scopeDepth++;
+      nameScopeStartTokenIndex = _base.state.tokens.length;
+      _base.state.scopeDepth++;
     }
-    parseBindingIdentifier(false);
+    _lval.parseBindingIdentifier.call(void 0, false);
   }
 
-  const startTokenIndex = state.tokens.length;
-  state.scopeDepth++;
+  const startTokenIndex = _base.state.tokens.length;
+  _base.state.scopeDepth++;
   parseFunctionParams();
-  parseFunctionBodyAndFinish(functionStart);
-  const endTokenIndex = state.tokens.length;
+  _expression.parseFunctionBodyAndFinish.call(void 0, functionStart);
+  const endTokenIndex = _base.state.tokens.length;
   // In addition to the block scope of the function body, we need a separate function-style scope
   // that includes the params.
-  state.scopes.push(new Scope(startTokenIndex, endTokenIndex, true));
-  state.scopeDepth--;
+  _base.state.scopes.push(new (0, _state.Scope)(startTokenIndex, endTokenIndex, true));
+  _base.state.scopeDepth--;
   if (nameScopeStartTokenIndex !== null) {
-    state.scopes.push(new Scope(nameScopeStartTokenIndex, endTokenIndex, true));
-    state.scopeDepth--;
+    _base.state.scopes.push(new (0, _state.Scope)(nameScopeStartTokenIndex, endTokenIndex, true));
+    _base.state.scopeDepth--;
   }
-}
+} exports.parseFunction = parseFunction;
 
-export function parseFunctionParams(
+ function parseFunctionParams(
   allowModifiers = false,
   funcContextId = 0,
 ) {
-  if (isTypeScriptEnabled) {
-    tsStartParseFunctionParams();
-  } else if (isFlowEnabled) {
-    flowStartParseFunctionParams();
+  if (_base.isTypeScriptEnabled) {
+    _typescript.tsStartParseFunctionParams.call(void 0, );
+  } else if (_base.isFlowEnabled) {
+    _flow.flowStartParseFunctionParams.call(void 0, );
   }
 
-  expect(tt.parenL);
+  _util.expect.call(void 0, _types.TokenType.parenL);
   if (funcContextId) {
-    state.tokens[state.tokens.length - 1].contextId = funcContextId;
+    _base.state.tokens[_base.state.tokens.length - 1].contextId = funcContextId;
   }
-  parseBindingList(
-    tt.parenR,
+  _lval.parseBindingList.call(void 0, 
+    _types.TokenType.parenR,
     false /* isBlockScope */,
     false /* allowEmpty */,
     allowModifiers,
     funcContextId,
   );
   if (funcContextId) {
-    state.tokens[state.tokens.length - 1].contextId = funcContextId;
+    _base.state.tokens[_base.state.tokens.length - 1].contextId = funcContextId;
   }
-}
+} exports.parseFunctionParams = parseFunctionParams;
 
 // Parse a class declaration or literal (depending on the
 // `isStatement` parameter).
 
-export function parseClass(isStatement, optionalId = false) {
+ function parseClass(isStatement, optionalId = false) {
   // Put a context ID on the class keyword, the open-brace, and the close-brace, so that later
   // code can easily navigate to meaningful points on the class.
-  const contextId = getNextContextId();
+  const contextId = _base.getNextContextId.call(void 0, );
 
-  next();
-  state.tokens[state.tokens.length - 1].contextId = contextId;
-  state.tokens[state.tokens.length - 1].isExpression = !isStatement;
+  _tokenizer.next.call(void 0, );
+  _base.state.tokens[_base.state.tokens.length - 1].contextId = contextId;
+  _base.state.tokens[_base.state.tokens.length - 1].isExpression = !isStatement;
   // Like with functions, we declare a special "name scope" from the start of the name to the end
   // of the class, but only with expression-style classes, to represent the fact that the name is
   // available to the body of the class but not an outer declaration.
   let nameScopeStartTokenIndex = null;
   if (!isStatement) {
-    nameScopeStartTokenIndex = state.tokens.length;
-    state.scopeDepth++;
+    nameScopeStartTokenIndex = _base.state.tokens.length;
+    _base.state.scopeDepth++;
   }
   parseClassId(isStatement, optionalId);
   parseClassSuper();
-  const openBraceIndex = state.tokens.length;
+  const openBraceIndex = _base.state.tokens.length;
   parseClassBody(contextId);
-  if (state.error) {
+  if (_base.state.error) {
     return;
   }
-  state.tokens[openBraceIndex].contextId = contextId;
-  state.tokens[state.tokens.length - 1].contextId = contextId;
+  _base.state.tokens[openBraceIndex].contextId = contextId;
+  _base.state.tokens[_base.state.tokens.length - 1].contextId = contextId;
   if (nameScopeStartTokenIndex !== null) {
-    const endTokenIndex = state.tokens.length;
-    state.scopes.push(new Scope(nameScopeStartTokenIndex, endTokenIndex, false));
-    state.scopeDepth--;
+    const endTokenIndex = _base.state.tokens.length;
+    _base.state.scopes.push(new (0, _state.Scope)(nameScopeStartTokenIndex, endTokenIndex, false));
+    _base.state.scopeDepth--;
   }
-}
+} exports.parseClass = parseClass;
 
 function isClassProperty() {
-  return match(tt.eq) || match(tt.semi) || match(tt.braceR) || match(tt.bang) || match(tt.colon);
+  return _tokenizer.match.call(void 0, _types.TokenType.eq) || _tokenizer.match.call(void 0, _types.TokenType.semi) || _tokenizer.match.call(void 0, _types.TokenType.braceR) || _tokenizer.match.call(void 0, _types.TokenType.bang) || _tokenizer.match.call(void 0, _types.TokenType.colon);
 }
 
 function isClassMethod() {
-  return match(tt.parenL) || match(tt.lessThan);
+  return _tokenizer.match.call(void 0, _types.TokenType.parenL) || _tokenizer.match.call(void 0, _types.TokenType.lessThan);
 }
 
 function parseClassBody(classContextId) {
-  expect(tt.braceL);
+  _util.expect.call(void 0, _types.TokenType.braceL);
 
-  while (!eat(tt.braceR) && !state.error) {
-    if (eat(tt.semi)) {
+  while (!_tokenizer.eat.call(void 0, _types.TokenType.braceR) && !_base.state.error) {
+    if (_tokenizer.eat.call(void 0, _types.TokenType.semi)) {
       continue;
     }
 
-    if (match(tt.at)) {
+    if (_tokenizer.match.call(void 0, _types.TokenType.at)) {
       parseDecorator();
       continue;
     }
-    const memberStart = state.start;
+    const memberStart = _base.state.start;
     parseClassMember(memberStart, classContextId);
   }
 }
 
 function parseClassMember(memberStart, classContextId) {
-  if (isTypeScriptEnabled) {
-    tsParseModifiers([
-      ContextualKeyword._declare,
-      ContextualKeyword._public,
-      ContextualKeyword._protected,
-      ContextualKeyword._private,
-      ContextualKeyword._override,
+  if (_base.isTypeScriptEnabled) {
+    _typescript.tsParseModifiers.call(void 0, [
+      _keywords.ContextualKeyword._declare,
+      _keywords.ContextualKeyword._public,
+      _keywords.ContextualKeyword._protected,
+      _keywords.ContextualKeyword._private,
+      _keywords.ContextualKeyword._override,
     ]);
   }
   let isStatic = false;
-  if (match(tt.name) && state.contextualKeyword === ContextualKeyword._static) {
-    parseIdentifier(); // eats 'static'
+  if (_tokenizer.match.call(void 0, _types.TokenType.name) && _base.state.contextualKeyword === _keywords.ContextualKeyword._static) {
+    _expression.parseIdentifier.call(void 0, ); // eats 'static'
     if (isClassMethod()) {
       parseClassMethod(memberStart, /* isConstructor */ false);
       return;
@@ -793,13 +793,13 @@ function parseClassMember(memberStart, classContextId) {
       return;
     }
     // otherwise something static
-    state.tokens[state.tokens.length - 1].type = tt._static;
+    _base.state.tokens[_base.state.tokens.length - 1].type = _types.TokenType._static;
     isStatic = true;
 
-    if (match(tt.braceL)) {
+    if (_tokenizer.match.call(void 0, _types.TokenType.braceL)) {
       // This is a static block. Mark the word "static" with the class context ID for class element
       // detection and parse as a regular block.
-      state.tokens[state.tokens.length - 1].contextId = classContextId;
+      _base.state.tokens[_base.state.tokens.length - 1].contextId = classContextId;
       parseBlock();
       return;
     }
@@ -813,12 +813,12 @@ function parseClassMemberWithIsStatic(
   isStatic,
   classContextId,
 ) {
-  if (isTypeScriptEnabled) {
-    if (tsTryParseClassMemberWithIsStatic(isStatic)) {
+  if (_base.isTypeScriptEnabled) {
+    if (_typescript.tsTryParseClassMemberWithIsStatic.call(void 0, isStatic)) {
       return;
     }
   }
-  if (eat(tt.star)) {
+  if (_tokenizer.eat.call(void 0, _types.TokenType.star)) {
     // a generator
     parseClassPropertyName(classContextId);
     parseClassMethod(memberStart, /* isConstructor */ false);
@@ -829,9 +829,9 @@ function parseClassMemberWithIsStatic(
   // "set".
   parseClassPropertyName(classContextId);
   let isConstructor = false;
-  const token = state.tokens[state.tokens.length - 1];
+  const token = _base.state.tokens[_base.state.tokens.length - 1];
   // We allow "constructor" as either an identifier or a string.
-  if (token.contextualKeyword === ContextualKeyword._constructor) {
+  if (token.contextualKeyword === _keywords.ContextualKeyword._constructor) {
     isConstructor = true;
   }
   parsePostMemberNameModifiers();
@@ -840,12 +840,12 @@ function parseClassMemberWithIsStatic(
     parseClassMethod(memberStart, isConstructor);
   } else if (isClassProperty()) {
     parseClassProperty();
-  } else if (token.contextualKeyword === ContextualKeyword._async && !isLineTerminator()) {
-    state.tokens[state.tokens.length - 1].type = tt._async;
+  } else if (token.contextualKeyword === _keywords.ContextualKeyword._async && !_util.isLineTerminator.call(void 0, )) {
+    _base.state.tokens[_base.state.tokens.length - 1].type = _types.TokenType._async;
     // an async method
-    const isGenerator = match(tt.star);
+    const isGenerator = _tokenizer.match.call(void 0, _types.TokenType.star);
     if (isGenerator) {
-      next();
+      _tokenizer.next.call(void 0, );
     }
 
     // The so-called parsed name would have been "async": get the real name.
@@ -853,92 +853,92 @@ function parseClassMemberWithIsStatic(
     parsePostMemberNameModifiers();
     parseClassMethod(memberStart, false /* isConstructor */);
   } else if (
-    (token.contextualKeyword === ContextualKeyword._get ||
-      token.contextualKeyword === ContextualKeyword._set) &&
-    !(isLineTerminator() && match(tt.star))
+    (token.contextualKeyword === _keywords.ContextualKeyword._get ||
+      token.contextualKeyword === _keywords.ContextualKeyword._set) &&
+    !(_util.isLineTerminator.call(void 0, ) && _tokenizer.match.call(void 0, _types.TokenType.star))
   ) {
-    if (token.contextualKeyword === ContextualKeyword._get) {
-      state.tokens[state.tokens.length - 1].type = tt._get;
+    if (token.contextualKeyword === _keywords.ContextualKeyword._get) {
+      _base.state.tokens[_base.state.tokens.length - 1].type = _types.TokenType._get;
     } else {
-      state.tokens[state.tokens.length - 1].type = tt._set;
+      _base.state.tokens[_base.state.tokens.length - 1].type = _types.TokenType._set;
     }
     // `get\n*` is an uninitialized property named 'get' followed by a generator.
     // a getter or setter
     // The so-called parsed name would have been "get/set": get the real name.
     parseClassPropertyName(classContextId);
     parseClassMethod(memberStart, /* isConstructor */ false);
-  } else if (token.contextualKeyword === ContextualKeyword._accessor && !isLineTerminator()) {
+  } else if (token.contextualKeyword === _keywords.ContextualKeyword._accessor && !_util.isLineTerminator.call(void 0, )) {
     parseClassPropertyName(classContextId);
     parseClassProperty();
-  } else if (isLineTerminator()) {
+  } else if (_util.isLineTerminator.call(void 0, )) {
     // an uninitialized class property (due to ASI, since we don't otherwise recognize the next token)
     parseClassProperty();
   } else {
-    unexpected();
+    _util.unexpected.call(void 0, );
   }
 }
 
 function parseClassMethod(functionStart, isConstructor) {
-  if (isTypeScriptEnabled) {
-    tsTryParseTypeParameters();
-  } else if (isFlowEnabled) {
-    if (match(tt.lessThan)) {
-      flowParseTypeParameterDeclaration();
+  if (_base.isTypeScriptEnabled) {
+    _typescript.tsTryParseTypeParameters.call(void 0, );
+  } else if (_base.isFlowEnabled) {
+    if (_tokenizer.match.call(void 0, _types.TokenType.lessThan)) {
+      _flow.flowParseTypeParameterDeclaration.call(void 0, );
     }
   }
-  parseMethod(functionStart, isConstructor);
+  _expression.parseMethod.call(void 0, functionStart, isConstructor);
 }
 
 // Return the name of the class property, if it is a simple identifier.
-export function parseClassPropertyName(classContextId) {
-  parsePropertyName(classContextId);
-}
+ function parseClassPropertyName(classContextId) {
+  _expression.parsePropertyName.call(void 0, classContextId);
+} exports.parseClassPropertyName = parseClassPropertyName;
 
-export function parsePostMemberNameModifiers() {
-  if (isTypeScriptEnabled) {
-    const oldIsType = pushTypeContext(0);
-    eat(tt.question);
-    popTypeContext(oldIsType);
+ function parsePostMemberNameModifiers() {
+  if (_base.isTypeScriptEnabled) {
+    const oldIsType = _tokenizer.pushTypeContext.call(void 0, 0);
+    _tokenizer.eat.call(void 0, _types.TokenType.question);
+    _tokenizer.popTypeContext.call(void 0, oldIsType);
   }
-}
+} exports.parsePostMemberNameModifiers = parsePostMemberNameModifiers;
 
-export function parseClassProperty() {
-  if (isTypeScriptEnabled) {
-    eatTypeToken(tt.bang);
-    tsTryParseTypeAnnotation();
-  } else if (isFlowEnabled) {
-    if (match(tt.colon)) {
-      flowParseTypeAnnotation();
+ function parseClassProperty() {
+  if (_base.isTypeScriptEnabled) {
+    _tokenizer.eatTypeToken.call(void 0, _types.TokenType.bang);
+    _typescript.tsTryParseTypeAnnotation.call(void 0, );
+  } else if (_base.isFlowEnabled) {
+    if (_tokenizer.match.call(void 0, _types.TokenType.colon)) {
+      _flow.flowParseTypeAnnotation.call(void 0, );
     }
   }
 
-  if (match(tt.eq)) {
-    const equalsTokenIndex = state.tokens.length;
-    next();
-    parseMaybeAssign();
-    state.tokens[equalsTokenIndex].rhsEndIndex = state.tokens.length;
+  if (_tokenizer.match.call(void 0, _types.TokenType.eq)) {
+    const equalsTokenIndex = _base.state.tokens.length;
+    _tokenizer.next.call(void 0, );
+    _expression.parseMaybeAssign.call(void 0, );
+    _base.state.tokens[equalsTokenIndex].rhsEndIndex = _base.state.tokens.length;
   }
-  semicolon();
-}
+  _util.semicolon.call(void 0, );
+} exports.parseClassProperty = parseClassProperty;
 
 function parseClassId(isStatement, optionalId = false) {
   if (
-    isTypeScriptEnabled &&
+    _base.isTypeScriptEnabled &&
     (!isStatement || optionalId) &&
-    isContextual(ContextualKeyword._implements)
+    _util.isContextual.call(void 0, _keywords.ContextualKeyword._implements)
   ) {
     return;
   }
 
-  if (match(tt.name)) {
-    parseBindingIdentifier(true);
+  if (_tokenizer.match.call(void 0, _types.TokenType.name)) {
+    _lval.parseBindingIdentifier.call(void 0, true);
   }
 
-  if (isTypeScriptEnabled) {
-    tsTryParseTypeParameters();
-  } else if (isFlowEnabled) {
-    if (match(tt.lessThan)) {
-      flowParseTypeParameterDeclaration();
+  if (_base.isTypeScriptEnabled) {
+    _typescript.tsTryParseTypeParameters.call(void 0, );
+  } else if (_base.isFlowEnabled) {
+    if (_tokenizer.match.call(void 0, _types.TokenType.lessThan)) {
+      _flow.flowParseTypeParameterDeclaration.call(void 0, );
     }
   }
 }
@@ -946,25 +946,25 @@ function parseClassId(isStatement, optionalId = false) {
 // Returns true if there was a superclass.
 function parseClassSuper() {
   let hasSuper = false;
-  if (eat(tt._extends)) {
-    parseExprSubscripts();
+  if (_tokenizer.eat.call(void 0, _types.TokenType._extends)) {
+    _expression.parseExprSubscripts.call(void 0, );
     hasSuper = true;
   } else {
     hasSuper = false;
   }
-  if (isTypeScriptEnabled) {
-    tsAfterParseClassSuper(hasSuper);
-  } else if (isFlowEnabled) {
-    flowAfterParseClassSuper(hasSuper);
+  if (_base.isTypeScriptEnabled) {
+    _typescript.tsAfterParseClassSuper.call(void 0, hasSuper);
+  } else if (_base.isFlowEnabled) {
+    _flow.flowAfterParseClassSuper.call(void 0, hasSuper);
   }
 }
 
 // Parses module export declaration.
 
-export function parseExport() {
-  const exportIndex = state.tokens.length - 1;
-  if (isTypeScriptEnabled) {
-    if (tsTryParseExport()) {
+ function parseExport() {
+  const exportIndex = _base.state.tokens.length - 1;
+  if (_base.isTypeScriptEnabled) {
+    if (_typescript.tsTryParseExport.call(void 0, )) {
       return;
     }
   }
@@ -973,17 +973,17 @@ export function parseExport() {
     parseExportStar();
   } else if (isExportDefaultSpecifier()) {
     // export default from
-    parseIdentifier();
-    if (match(tt.comma) && lookaheadType() === tt.star) {
-      expect(tt.comma);
-      expect(tt.star);
-      expectContextual(ContextualKeyword._as);
-      parseIdentifier();
+    _expression.parseIdentifier.call(void 0, );
+    if (_tokenizer.match.call(void 0, _types.TokenType.comma) && _tokenizer.lookaheadType.call(void 0, ) === _types.TokenType.star) {
+      _util.expect.call(void 0, _types.TokenType.comma);
+      _util.expect.call(void 0, _types.TokenType.star);
+      _util.expectContextual.call(void 0, _keywords.ContextualKeyword._as);
+      _expression.parseIdentifier.call(void 0, );
     } else {
       parseExportSpecifiersMaybe();
     }
     parseExportFrom();
-  } else if (eat(tt._default)) {
+  } else if (_tokenizer.eat.call(void 0, _types.TokenType._default)) {
     // export default ...
     parseExportDefaultExpression();
   } else if (shouldParseExportDeclaration()) {
@@ -993,169 +993,169 @@ export function parseExport() {
     parseExportSpecifiers();
     parseExportFrom();
   }
-  state.tokens[exportIndex].rhsEndIndex = state.tokens.length;
-}
+  _base.state.tokens[exportIndex].rhsEndIndex = _base.state.tokens.length;
+} exports.parseExport = parseExport;
 
 function parseExportDefaultExpression() {
-  if (isTypeScriptEnabled) {
-    if (tsTryParseExportDefaultExpression()) {
+  if (_base.isTypeScriptEnabled) {
+    if (_typescript.tsTryParseExportDefaultExpression.call(void 0, )) {
       return;
     }
   }
-  if (isFlowEnabled) {
-    if (flowTryParseExportDefaultExpression()) {
+  if (_base.isFlowEnabled) {
+    if (_flow.flowTryParseExportDefaultExpression.call(void 0, )) {
       return;
     }
   }
-  const functionStart = state.start;
-  if (eat(tt._function)) {
+  const functionStart = _base.state.start;
+  if (_tokenizer.eat.call(void 0, _types.TokenType._function)) {
     parseFunction(functionStart, true, true);
-  } else if (isContextual(ContextualKeyword._async) && lookaheadType() === tt._function) {
+  } else if (_util.isContextual.call(void 0, _keywords.ContextualKeyword._async) && _tokenizer.lookaheadType.call(void 0, ) === _types.TokenType._function) {
     // async function declaration
-    eatContextual(ContextualKeyword._async);
-    eat(tt._function);
+    _util.eatContextual.call(void 0, _keywords.ContextualKeyword._async);
+    _tokenizer.eat.call(void 0, _types.TokenType._function);
     parseFunction(functionStart, true, true);
-  } else if (match(tt._class)) {
+  } else if (_tokenizer.match.call(void 0, _types.TokenType._class)) {
     parseClass(true, true);
-  } else if (match(tt.at)) {
+  } else if (_tokenizer.match.call(void 0, _types.TokenType.at)) {
     parseDecorators();
     parseClass(true, true);
   } else {
-    parseMaybeAssign();
-    semicolon();
+    _expression.parseMaybeAssign.call(void 0, );
+    _util.semicolon.call(void 0, );
   }
 }
 
 function parseExportDeclaration() {
-  if (isTypeScriptEnabled) {
-    tsParseExportDeclaration();
-  } else if (isFlowEnabled) {
-    flowParseExportDeclaration();
+  if (_base.isTypeScriptEnabled) {
+    _typescript.tsParseExportDeclaration.call(void 0, );
+  } else if (_base.isFlowEnabled) {
+    _flow.flowParseExportDeclaration.call(void 0, );
   } else {
     parseStatement(true);
   }
 }
 
 function isExportDefaultSpecifier() {
-  if (isTypeScriptEnabled && tsIsDeclarationStart()) {
+  if (_base.isTypeScriptEnabled && _typescript.tsIsDeclarationStart.call(void 0, )) {
     return false;
-  } else if (isFlowEnabled && flowShouldDisallowExportDefaultSpecifier()) {
+  } else if (_base.isFlowEnabled && _flow.flowShouldDisallowExportDefaultSpecifier.call(void 0, )) {
     return false;
   }
-  if (match(tt.name)) {
-    return state.contextualKeyword !== ContextualKeyword._async;
-  }
-
-  if (!match(tt._default)) {
-    return false;
+  if (_tokenizer.match.call(void 0, _types.TokenType.name)) {
+    return _base.state.contextualKeyword !== _keywords.ContextualKeyword._async;
   }
 
-  const _next = nextTokenStart();
-  const lookahead = lookaheadTypeAndKeyword();
+  if (!_tokenizer.match.call(void 0, _types.TokenType._default)) {
+    return false;
+  }
+
+  const _next = _tokenizer.nextTokenStart.call(void 0, );
+  const lookahead = _tokenizer.lookaheadTypeAndKeyword.call(void 0, );
   const hasFrom =
-    lookahead.type === tt.name && lookahead.contextualKeyword === ContextualKeyword._from;
-  if (lookahead.type === tt.comma) {
+    lookahead.type === _types.TokenType.name && lookahead.contextualKeyword === _keywords.ContextualKeyword._from;
+  if (lookahead.type === _types.TokenType.comma) {
     return true;
   }
   // lookahead again when `export default from` is seen
   if (hasFrom) {
-    const nextAfterFrom = input.charCodeAt(nextTokenStartSince(_next + 4));
-    return nextAfterFrom === charCodes.quotationMark || nextAfterFrom === charCodes.apostrophe;
+    const nextAfterFrom = _base.input.charCodeAt(_tokenizer.nextTokenStartSince.call(void 0, _next + 4));
+    return nextAfterFrom === _charcodes.charCodes.quotationMark || nextAfterFrom === _charcodes.charCodes.apostrophe;
   }
   return false;
 }
 
 function parseExportSpecifiersMaybe() {
-  if (eat(tt.comma)) {
+  if (_tokenizer.eat.call(void 0, _types.TokenType.comma)) {
     parseExportSpecifiers();
   }
 }
 
-export function parseExportFrom() {
-  if (eatContextual(ContextualKeyword._from)) {
-    parseExprAtom();
+ function parseExportFrom() {
+  if (_util.eatContextual.call(void 0, _keywords.ContextualKeyword._from)) {
+    _expression.parseExprAtom.call(void 0, );
     maybeParseImportAttributes();
   }
-  semicolon();
-}
+  _util.semicolon.call(void 0, );
+} exports.parseExportFrom = parseExportFrom;
 
 function shouldParseExportStar() {
-  if (isFlowEnabled) {
-    return flowShouldParseExportStar();
+  if (_base.isFlowEnabled) {
+    return _flow.flowShouldParseExportStar.call(void 0, );
   } else {
-    return match(tt.star);
+    return _tokenizer.match.call(void 0, _types.TokenType.star);
   }
 }
 
 function parseExportStar() {
-  if (isFlowEnabled) {
-    flowParseExportStar();
+  if (_base.isFlowEnabled) {
+    _flow.flowParseExportStar.call(void 0, );
   } else {
     baseParseExportStar();
   }
 }
 
-export function baseParseExportStar() {
-  expect(tt.star);
+ function baseParseExportStar() {
+  _util.expect.call(void 0, _types.TokenType.star);
 
-  if (isContextual(ContextualKeyword._as)) {
+  if (_util.isContextual.call(void 0, _keywords.ContextualKeyword._as)) {
     parseExportNamespace();
   } else {
     parseExportFrom();
   }
-}
+} exports.baseParseExportStar = baseParseExportStar;
 
 function parseExportNamespace() {
-  next();
-  state.tokens[state.tokens.length - 1].type = tt._as;
-  parseIdentifier();
+  _tokenizer.next.call(void 0, );
+  _base.state.tokens[_base.state.tokens.length - 1].type = _types.TokenType._as;
+  _expression.parseIdentifier.call(void 0, );
   parseExportSpecifiersMaybe();
   parseExportFrom();
 }
 
 function shouldParseExportDeclaration() {
   return (
-    (isTypeScriptEnabled && tsIsDeclarationStart()) ||
-    (isFlowEnabled && flowShouldParseExportDeclaration()) ||
-    state.type === tt._var ||
-    state.type === tt._const ||
-    state.type === tt._let ||
-    state.type === tt._function ||
-    state.type === tt._class ||
-    isContextual(ContextualKeyword._async) ||
-    match(tt.at)
+    (_base.isTypeScriptEnabled && _typescript.tsIsDeclarationStart.call(void 0, )) ||
+    (_base.isFlowEnabled && _flow.flowShouldParseExportDeclaration.call(void 0, )) ||
+    _base.state.type === _types.TokenType._var ||
+    _base.state.type === _types.TokenType._const ||
+    _base.state.type === _types.TokenType._let ||
+    _base.state.type === _types.TokenType._function ||
+    _base.state.type === _types.TokenType._class ||
+    _util.isContextual.call(void 0, _keywords.ContextualKeyword._async) ||
+    _tokenizer.match.call(void 0, _types.TokenType.at)
   );
 }
 
 // Parses a comma-separated list of module exports.
-export function parseExportSpecifiers() {
+ function parseExportSpecifiers() {
   let first = true;
 
   // export { x, y as z } [from '...']
-  expect(tt.braceL);
+  _util.expect.call(void 0, _types.TokenType.braceL);
 
-  while (!eat(tt.braceR) && !state.error) {
+  while (!_tokenizer.eat.call(void 0, _types.TokenType.braceR) && !_base.state.error) {
     if (first) {
       first = false;
     } else {
-      expect(tt.comma);
-      if (eat(tt.braceR)) {
+      _util.expect.call(void 0, _types.TokenType.comma);
+      if (_tokenizer.eat.call(void 0, _types.TokenType.braceR)) {
         break;
       }
     }
     parseExportSpecifier();
   }
-}
+} exports.parseExportSpecifiers = parseExportSpecifiers;
 
 function parseExportSpecifier() {
-  if (isTypeScriptEnabled) {
-    tsParseExportSpecifier();
+  if (_base.isTypeScriptEnabled) {
+    _typescript.tsParseExportSpecifier.call(void 0, );
     return;
   }
-  parseIdentifier();
-  state.tokens[state.tokens.length - 1].identifierRole = IdentifierRole.ExportAccess;
-  if (eatContextual(ContextualKeyword._as)) {
-    parseIdentifier();
+  _expression.parseIdentifier.call(void 0, );
+  _base.state.tokens[_base.state.tokens.length - 1].identifierRole = _tokenizer.IdentifierRole.ExportAccess;
+  if (_util.eatContextual.call(void 0, _keywords.ContextualKeyword._as)) {
+    _expression.parseIdentifier.call(void 0, );
   }
 }
 
@@ -1172,21 +1172,21 @@ function parseExportSpecifier() {
  * import module, {bar} from "foo";
  */
 function isImportReflection() {
-  const snapshot = state.snapshot();
-  expectContextual(ContextualKeyword._module);
-  if (eatContextual(ContextualKeyword._from)) {
-    if (isContextual(ContextualKeyword._from)) {
-      state.restoreFromSnapshot(snapshot);
+  const snapshot = _base.state.snapshot();
+  _util.expectContextual.call(void 0, _keywords.ContextualKeyword._module);
+  if (_util.eatContextual.call(void 0, _keywords.ContextualKeyword._from)) {
+    if (_util.isContextual.call(void 0, _keywords.ContextualKeyword._from)) {
+      _base.state.restoreFromSnapshot(snapshot);
       return true;
     } else {
-      state.restoreFromSnapshot(snapshot);
+      _base.state.restoreFromSnapshot(snapshot);
       return false;
     }
-  } else if (match(tt.comma)) {
-    state.restoreFromSnapshot(snapshot);
+  } else if (_tokenizer.match.call(void 0, _types.TokenType.comma)) {
+    _base.state.restoreFromSnapshot(snapshot);
     return false;
   } else {
-    state.restoreFromSnapshot(snapshot);
+    _base.state.restoreFromSnapshot(snapshot);
     return true;
   }
 }
@@ -1198,67 +1198,67 @@ function isImportReflection() {
 function parseMaybeImportReflection() {
   // isImportReflection does snapshot/restore, so only run it if we see the word
   // "module".
-  if (isContextual(ContextualKeyword._module) && isImportReflection()) {
-    next();
+  if (_util.isContextual.call(void 0, _keywords.ContextualKeyword._module) && isImportReflection()) {
+    _tokenizer.next.call(void 0, );
   }
 }
 
 // Parses import declaration.
 
-export function parseImport() {
-  if (isTypeScriptEnabled && match(tt.name) && lookaheadType() === tt.eq) {
-    tsParseImportEqualsDeclaration();
+ function parseImport() {
+  if (_base.isTypeScriptEnabled && _tokenizer.match.call(void 0, _types.TokenType.name) && _tokenizer.lookaheadType.call(void 0, ) === _types.TokenType.eq) {
+    _typescript.tsParseImportEqualsDeclaration.call(void 0, );
     return;
   }
-  if (isTypeScriptEnabled && isContextual(ContextualKeyword._type)) {
-    const lookahead = lookaheadTypeAndKeyword();
-    if (lookahead.type === tt.name && lookahead.contextualKeyword !== ContextualKeyword._from) {
+  if (_base.isTypeScriptEnabled && _util.isContextual.call(void 0, _keywords.ContextualKeyword._type)) {
+    const lookahead = _tokenizer.lookaheadTypeAndKeyword.call(void 0, );
+    if (lookahead.type === _types.TokenType.name && lookahead.contextualKeyword !== _keywords.ContextualKeyword._from) {
       // One of these `import type` cases:
       // import type T = require('T');
       // import type A from 'A';
-      expectContextual(ContextualKeyword._type);
-      if (lookaheadType() === tt.eq) {
-        tsParseImportEqualsDeclaration();
+      _util.expectContextual.call(void 0, _keywords.ContextualKeyword._type);
+      if (_tokenizer.lookaheadType.call(void 0, ) === _types.TokenType.eq) {
+        _typescript.tsParseImportEqualsDeclaration.call(void 0, );
         return;
       }
       // If this is an `import type...from` statement, then we already ate the
       // type token, so proceed to the regular import parser.
-    } else if (lookahead.type === tt.star || lookahead.type === tt.braceL) {
+    } else if (lookahead.type === _types.TokenType.star || lookahead.type === _types.TokenType.braceL) {
       // One of these `import type` cases, in which case we can eat the type token
       // and proceed as normal:
       // import type * as A from 'A';
       // import type {a} from 'A';
-      expectContextual(ContextualKeyword._type);
+      _util.expectContextual.call(void 0, _keywords.ContextualKeyword._type);
     }
     // Otherwise, we are importing the name "type".
   }
 
   // import '...'
-  if (match(tt.string)) {
-    parseExprAtom();
+  if (_tokenizer.match.call(void 0, _types.TokenType.string)) {
+    _expression.parseExprAtom.call(void 0, );
   } else {
     parseMaybeImportReflection();
     parseImportSpecifiers();
-    expectContextual(ContextualKeyword._from);
-    parseExprAtom();
+    _util.expectContextual.call(void 0, _keywords.ContextualKeyword._from);
+    _expression.parseExprAtom.call(void 0, );
   }
   maybeParseImportAttributes();
-  semicolon();
-}
+  _util.semicolon.call(void 0, );
+} exports.parseImport = parseImport;
 
 // eslint-disable-next-line no-unused-vars
 function shouldParseDefaultImport() {
-  return match(tt.name);
+  return _tokenizer.match.call(void 0, _types.TokenType.name);
 }
 
 function parseImportSpecifierLocal() {
-  parseImportedIdentifier();
+  _lval.parseImportedIdentifier.call(void 0, );
 }
 
 // Parses a comma-separated list of module imports.
 function parseImportSpecifiers() {
-  if (isFlowEnabled) {
-    flowStartParseImportSpecifiers();
+  if (_base.isFlowEnabled) {
+    _flow.flowStartParseImportSpecifiers.call(void 0, );
   }
 
   let first = true;
@@ -1266,32 +1266,32 @@ function parseImportSpecifiers() {
     // import defaultObj, { x, y as z } from '...'
     parseImportSpecifierLocal();
 
-    if (!eat(tt.comma)) return;
+    if (!_tokenizer.eat.call(void 0, _types.TokenType.comma)) return;
   }
 
-  if (match(tt.star)) {
-    next();
-    expectContextual(ContextualKeyword._as);
+  if (_tokenizer.match.call(void 0, _types.TokenType.star)) {
+    _tokenizer.next.call(void 0, );
+    _util.expectContextual.call(void 0, _keywords.ContextualKeyword._as);
 
     parseImportSpecifierLocal();
 
     return;
   }
 
-  expect(tt.braceL);
-  while (!eat(tt.braceR) && !state.error) {
+  _util.expect.call(void 0, _types.TokenType.braceL);
+  while (!_tokenizer.eat.call(void 0, _types.TokenType.braceR) && !_base.state.error) {
     if (first) {
       first = false;
     } else {
       // Detect an attempt to deep destructure
-      if (eat(tt.colon)) {
-        unexpected(
+      if (_tokenizer.eat.call(void 0, _types.TokenType.colon)) {
+        _util.unexpected.call(void 0, 
           "ES2015 named imports do not destructure. Use another statement for destructuring after the import.",
         );
       }
 
-      expect(tt.comma);
-      if (eat(tt.braceR)) {
+      _util.expect.call(void 0, _types.TokenType.comma);
+      if (_tokenizer.eat.call(void 0, _types.TokenType.braceR)) {
         break;
       }
     }
@@ -1301,19 +1301,19 @@ function parseImportSpecifiers() {
 }
 
 function parseImportSpecifier() {
-  if (isTypeScriptEnabled) {
-    tsParseImportSpecifier();
+  if (_base.isTypeScriptEnabled) {
+    _typescript.tsParseImportSpecifier.call(void 0, );
     return;
   }
-  if (isFlowEnabled) {
-    flowParseImportSpecifier();
+  if (_base.isFlowEnabled) {
+    _flow.flowParseImportSpecifier.call(void 0, );
     return;
   }
-  parseImportedIdentifier();
-  if (isContextual(ContextualKeyword._as)) {
-    state.tokens[state.tokens.length - 1].identifierRole = IdentifierRole.ImportAccess;
-    next();
-    parseImportedIdentifier();
+  _lval.parseImportedIdentifier.call(void 0, );
+  if (_util.isContextual.call(void 0, _keywords.ContextualKeyword._as)) {
+    _base.state.tokens[_base.state.tokens.length - 1].identifierRole = _tokenizer.IdentifierRole.ImportAccess;
+    _tokenizer.next.call(void 0, );
+    _lval.parseImportedIdentifier.call(void 0, );
   }
 }
 
@@ -1325,8 +1325,8 @@ function parseImportSpecifier() {
  * as a plain JS object, so just do that for simplicity.
  */
 function maybeParseImportAttributes() {
-  if (match(tt._with) || (isContextual(ContextualKeyword._assert) && !hasPrecedingLineBreak())) {
-    next();
-    parseObj(false, false);
+  if (_tokenizer.match.call(void 0, _types.TokenType._with) || (_util.isContextual.call(void 0, _keywords.ContextualKeyword._assert) && !_util.hasPrecedingLineBreak.call(void 0, ))) {
+    _tokenizer.next.call(void 0, );
+    _expression.parseObj.call(void 0, false, false);
   }
 }

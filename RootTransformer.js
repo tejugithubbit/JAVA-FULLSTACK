@@ -1,31 +1,31 @@
+"use strict";Object.defineProperty(exports, "__esModule", {value: true}); function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 
+var _keywords = require('../parser/tokenizer/keywords');
+var _types = require('../parser/tokenizer/types');
 
-import {ContextualKeyword} from "../parser/tokenizer/keywords";
-import {TokenType as tt} from "../parser/tokenizer/types";
+var _getClassInfo = require('../util/getClassInfo'); var _getClassInfo2 = _interopRequireDefault(_getClassInfo);
+var _CJSImportTransformer = require('./CJSImportTransformer'); var _CJSImportTransformer2 = _interopRequireDefault(_CJSImportTransformer);
+var _ESMImportTransformer = require('./ESMImportTransformer'); var _ESMImportTransformer2 = _interopRequireDefault(_ESMImportTransformer);
+var _FlowTransformer = require('./FlowTransformer'); var _FlowTransformer2 = _interopRequireDefault(_FlowTransformer);
+var _JestHoistTransformer = require('./JestHoistTransformer'); var _JestHoistTransformer2 = _interopRequireDefault(_JestHoistTransformer);
+var _JSXTransformer = require('./JSXTransformer'); var _JSXTransformer2 = _interopRequireDefault(_JSXTransformer);
+var _NumericSeparatorTransformer = require('./NumericSeparatorTransformer'); var _NumericSeparatorTransformer2 = _interopRequireDefault(_NumericSeparatorTransformer);
+var _OptionalCatchBindingTransformer = require('./OptionalCatchBindingTransformer'); var _OptionalCatchBindingTransformer2 = _interopRequireDefault(_OptionalCatchBindingTransformer);
+var _OptionalChainingNullishTransformer = require('./OptionalChainingNullishTransformer'); var _OptionalChainingNullishTransformer2 = _interopRequireDefault(_OptionalChainingNullishTransformer);
+var _ReactDisplayNameTransformer = require('./ReactDisplayNameTransformer'); var _ReactDisplayNameTransformer2 = _interopRequireDefault(_ReactDisplayNameTransformer);
+var _ReactHotLoaderTransformer = require('./ReactHotLoaderTransformer'); var _ReactHotLoaderTransformer2 = _interopRequireDefault(_ReactHotLoaderTransformer);
 
-import getClassInfo, {} from "../util/getClassInfo";
-import CJSImportTransformer from "./CJSImportTransformer";
-import ESMImportTransformer from "./ESMImportTransformer";
-import FlowTransformer from "./FlowTransformer";
-import JestHoistTransformer from "./JestHoistTransformer";
-import JSXTransformer from "./JSXTransformer";
-import NumericSeparatorTransformer from "./NumericSeparatorTransformer";
-import OptionalCatchBindingTransformer from "./OptionalCatchBindingTransformer";
-import OptionalChainingNullishTransformer from "./OptionalChainingNullishTransformer";
-import ReactDisplayNameTransformer from "./ReactDisplayNameTransformer";
-import ReactHotLoaderTransformer from "./ReactHotLoaderTransformer";
-
-import TypeScriptTransformer from "./TypeScriptTransformer";
-
-
-
-
+var _TypeScriptTransformer = require('./TypeScriptTransformer'); var _TypeScriptTransformer2 = _interopRequireDefault(_TypeScriptTransformer);
 
 
 
 
-export default class RootTransformer {
+
+
+
+
+ class RootTransformer {
    __init() {this.transformers = []}
   
   
@@ -51,20 +51,20 @@ export default class RootTransformer {
 
     if (!options.disableESTransforms) {
       this.transformers.push(
-        new OptionalChainingNullishTransformer(tokenProcessor, this.nameManager),
+        new (0, _OptionalChainingNullishTransformer2.default)(tokenProcessor, this.nameManager),
       );
-      this.transformers.push(new NumericSeparatorTransformer(tokenProcessor));
-      this.transformers.push(new OptionalCatchBindingTransformer(tokenProcessor, this.nameManager));
+      this.transformers.push(new (0, _NumericSeparatorTransformer2.default)(tokenProcessor));
+      this.transformers.push(new (0, _OptionalCatchBindingTransformer2.default)(tokenProcessor, this.nameManager));
     }
 
     if (transforms.includes("jsx")) {
       if (options.jsxRuntime !== "preserve") {
         this.transformers.push(
-          new JSXTransformer(this, tokenProcessor, importProcessor, this.nameManager, options),
+          new (0, _JSXTransformer2.default)(this, tokenProcessor, importProcessor, this.nameManager, options),
         );
       }
       this.transformers.push(
-        new ReactDisplayNameTransformer(this, tokenProcessor, importProcessor, options),
+        new (0, _ReactDisplayNameTransformer2.default)(this, tokenProcessor, importProcessor, options),
       );
     }
 
@@ -73,7 +73,7 @@ export default class RootTransformer {
       if (!options.filePath) {
         throw new Error("filePath is required when using the react-hot-loader transform.");
       }
-      reactHotLoaderTransformer = new ReactHotLoaderTransformer(tokenProcessor, options.filePath);
+      reactHotLoaderTransformer = new (0, _ReactHotLoaderTransformer2.default)(tokenProcessor, options.filePath);
       this.transformers.push(reactHotLoaderTransformer);
     }
 
@@ -85,7 +85,7 @@ export default class RootTransformer {
         throw new Error("Expected non-null importProcessor with imports transform enabled.");
       }
       this.transformers.push(
-        new CJSImportTransformer(
+        new (0, _CJSImportTransformer2.default)(
           this,
           tokenProcessor,
           importProcessor,
@@ -102,7 +102,7 @@ export default class RootTransformer {
       );
     } else {
       this.transformers.push(
-        new ESMImportTransformer(
+        new (0, _ESMImportTransformer2.default)(
           tokenProcessor,
           this.nameManager,
           this.helperManager,
@@ -117,17 +117,17 @@ export default class RootTransformer {
 
     if (transforms.includes("flow")) {
       this.transformers.push(
-        new FlowTransformer(this, tokenProcessor, transforms.includes("imports")),
+        new (0, _FlowTransformer2.default)(this, tokenProcessor, transforms.includes("imports")),
       );
     }
     if (transforms.includes("typescript")) {
       this.transformers.push(
-        new TypeScriptTransformer(this, tokenProcessor, transforms.includes("imports")),
+        new (0, _TypeScriptTransformer2.default)(this, tokenProcessor, transforms.includes("imports")),
       );
     }
     if (transforms.includes("jest")) {
       this.transformers.push(
-        new JestHoistTransformer(this, tokenProcessor, this.nameManager, importProcessor),
+        new (0, _JestHoistTransformer2.default)(this, tokenProcessor, this.nameManager, importProcessor),
       );
     }
   }
@@ -176,17 +176,17 @@ export default class RootTransformer {
     let braceDepth = 0;
     let parenDepth = 0;
     while (!this.tokens.isAtEnd()) {
-      if (this.tokens.matches1(tt.braceL) || this.tokens.matches1(tt.dollarBraceL)) {
+      if (this.tokens.matches1(_types.TokenType.braceL) || this.tokens.matches1(_types.TokenType.dollarBraceL)) {
         braceDepth++;
-      } else if (this.tokens.matches1(tt.braceR)) {
+      } else if (this.tokens.matches1(_types.TokenType.braceR)) {
         if (braceDepth === 0) {
           return;
         }
         braceDepth--;
       }
-      if (this.tokens.matches1(tt.parenL)) {
+      if (this.tokens.matches1(_types.TokenType.parenL)) {
         parenDepth++;
-      } else if (this.tokens.matches1(tt.parenR)) {
+      } else if (this.tokens.matches1(_types.TokenType.parenR)) {
         if (parenDepth === 0) {
           return;
         }
@@ -197,7 +197,7 @@ export default class RootTransformer {
   }
 
   processToken() {
-    if (this.tokens.matches1(tt._class)) {
+    if (this.tokens.matches1(_types.TokenType._class)) {
       this.processClass();
       return;
     }
@@ -214,7 +214,7 @@ export default class RootTransformer {
    * Skip past a class with a name and return that name.
    */
   processNamedClass() {
-    if (!this.tokens.matches2(tt._class, tt.name)) {
+    if (!this.tokens.matches2(_types.TokenType._class, _types.TokenType.name)) {
       throw new Error("Expected identifier for exported class name.");
     }
     const name = this.tokens.identifierNameAtIndex(this.tokens.currentIndex() + 1);
@@ -223,7 +223,7 @@ export default class RootTransformer {
   }
 
   processClass() {
-    const classInfo = getClassInfo(this, this.tokens, this.nameManager, this.disableESTransforms);
+    const classInfo = _getClassInfo2.default.call(void 0, this, this.tokens, this.nameManager, this.disableESTransforms);
 
     // Both static and instance initializers need a class name to use to invoke the initializer, so
     // assign to one if necessary.
@@ -243,8 +243,8 @@ export default class RootTransformer {
     if (contextId == null) {
       throw new Error("Expected class to have a context ID.");
     }
-    this.tokens.copyExpectedToken(tt._class);
-    while (!this.tokens.matchesContextIdAndLabel(tt.braceL, contextId)) {
+    this.tokens.copyExpectedToken(_types.TokenType._class);
+    while (!this.tokens.matchesContextIdAndLabel(_types.TokenType.braceL, contextId)) {
       this.processToken();
     }
 
@@ -281,7 +281,7 @@ export default class RootTransformer {
     if (classContextId == null) {
       throw new Error("Expected non-null context ID on class.");
     }
-    this.tokens.copyExpectedToken(tt.braceL);
+    this.tokens.copyExpectedToken(_types.TokenType.braceL);
     if (this.isReactHotLoaderTransformEnabled) {
       this.tokens.appendCode(
         "__reactstandin__regenerateByEval(key, code) {this[key] = eval(code);}",
@@ -307,12 +307,12 @@ export default class RootTransformer {
       }
     }
 
-    while (!this.tokens.matchesContextIdAndLabel(tt.braceR, classContextId)) {
+    while (!this.tokens.matchesContextIdAndLabel(_types.TokenType.braceR, classContextId)) {
       if (fieldIndex < fields.length && this.tokens.currentIndex() === fields[fieldIndex].start) {
         let needsCloseBrace = false;
-        if (this.tokens.matches1(tt.bracketL)) {
+        if (this.tokens.matches1(_types.TokenType.bracketL)) {
           this.tokens.copyTokenWithPrefix(`${fields[fieldIndex].initializerName}() {this`);
-        } else if (this.tokens.matches1(tt.string) || this.tokens.matches1(tt.num)) {
+        } else if (this.tokens.matches1(_types.TokenType.string) || this.tokens.matches1(_types.TokenType.num)) {
           this.tokens.copyTokenWithPrefix(`${fields[fieldIndex].initializerName}() {this[`);
           needsCloseBrace = true;
         } else {
@@ -353,7 +353,7 @@ export default class RootTransformer {
         this.processToken();
       }
     }
-    this.tokens.copyExpectedToken(tt.braceR);
+    this.tokens.copyExpectedToken(_types.TokenType.braceR);
   }
 
   makeConstructorInitCode(
@@ -375,13 +375,13 @@ export default class RootTransformer {
    * See https://github.com/alangpierce/sucrase/issues/391 for more details.
    */
   processPossibleArrowParamEnd() {
-    if (this.tokens.matches2(tt.parenR, tt.colon) && this.tokens.tokenAtRelativeIndex(1).isType) {
+    if (this.tokens.matches2(_types.TokenType.parenR, _types.TokenType.colon) && this.tokens.tokenAtRelativeIndex(1).isType) {
       let nextNonTypeIndex = this.tokens.currentIndex() + 1;
       // Look ahead to see if this is an arrow function or something else.
       while (this.tokens.tokens[nextNonTypeIndex].isType) {
         nextNonTypeIndex++;
       }
-      if (this.tokens.matches1AtIndex(nextNonTypeIndex, tt.arrow)) {
+      if (this.tokens.matches1AtIndex(nextNonTypeIndex, _types.TokenType.arrow)) {
         this.tokens.removeInitialToken();
         while (this.tokens.currentIndex() < nextNonTypeIndex) {
           this.tokens.removeToken();
@@ -405,13 +405,13 @@ export default class RootTransformer {
    */
   processPossibleAsyncArrowWithTypeParams() {
     if (
-      !this.tokens.matchesContextual(ContextualKeyword._async) &&
-      !this.tokens.matches1(tt._async)
+      !this.tokens.matchesContextual(_keywords.ContextualKeyword._async) &&
+      !this.tokens.matches1(_types.TokenType._async)
     ) {
       return false;
     }
     const nextToken = this.tokens.tokenAtRelativeIndex(1);
-    if (nextToken.type !== tt.lessThan || !nextToken.isType) {
+    if (nextToken.type !== _types.TokenType.lessThan || !nextToken.isType) {
       return false;
     }
 
@@ -420,7 +420,7 @@ export default class RootTransformer {
     while (this.tokens.tokens[nextNonTypeIndex].isType) {
       nextNonTypeIndex++;
     }
-    if (this.tokens.matches1AtIndex(nextNonTypeIndex, tt.parenL)) {
+    if (this.tokens.matches1AtIndex(nextNonTypeIndex, _types.TokenType.parenL)) {
       this.tokens.replaceToken("async (");
       this.tokens.removeInitialToken();
       while (this.tokens.currentIndex() < nextNonTypeIndex) {
@@ -459,4 +459,4 @@ export default class RootTransformer {
     }
     return mappings;
   }
-}
+} exports.default = RootTransformer;

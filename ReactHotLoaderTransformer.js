@@ -1,8 +1,8 @@
-import {IdentifierRole, isTopLevelDeclaration} from "../parser/tokenizer";
+"use strict";Object.defineProperty(exports, "__esModule", {value: true}); function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }var _tokenizer = require('../parser/tokenizer');
 
-import Transformer from "./Transformer";
+var _Transformer = require('./Transformer'); var _Transformer2 = _interopRequireDefault(_Transformer);
 
-export default class ReactHotLoaderTransformer extends Transformer {
+ class ReactHotLoaderTransformer extends _Transformer2.default {
    __init() {this.extractedDefaultExportName = null}
 
   constructor( tokens,  filePath) {
@@ -28,8 +28,8 @@ export default class ReactHotLoaderTransformer extends Transformer {
     for (const token of this.tokens.tokens) {
       if (
         !token.isType &&
-        isTopLevelDeclaration(token) &&
-        token.identifierRole !== IdentifierRole.ImportDeclaration
+        _tokenizer.isTopLevelDeclaration.call(void 0, token) &&
+        token.identifierRole !== _tokenizer.IdentifierRole.ImportDeclaration
       ) {
         topLevelNames.add(this.tokens.identifierNameForToken(token));
       }
@@ -66,4 +66,4 @@ ${namesToRegister
   process() {
     return false;
   }
-}
+} exports.default = ReactHotLoaderTransformer;

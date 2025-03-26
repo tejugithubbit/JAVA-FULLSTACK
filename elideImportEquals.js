@@ -1,7 +1,7 @@
-import {TokenType as tt} from "../parser/tokenizer/types";
+"use strict";Object.defineProperty(exports, "__esModule", {value: true});var _types = require('../parser/tokenizer/types');
 
 
-export default function elideImportEquals(tokens) {
+ function elideImportEquals(tokens) {
   // import
   tokens.removeInitialToken();
   // name
@@ -11,7 +11,7 @@ export default function elideImportEquals(tokens) {
   // name or require
   tokens.removeToken();
   // Handle either `import A = require('A')` or `import A = B.C.D`.
-  if (tokens.matches1(tt.parenL)) {
+  if (tokens.matches1(_types.TokenType.parenL)) {
     // (
     tokens.removeToken();
     // path string
@@ -19,11 +19,11 @@ export default function elideImportEquals(tokens) {
     // )
     tokens.removeToken();
   } else {
-    while (tokens.matches1(tt.dot)) {
+    while (tokens.matches1(_types.TokenType.dot)) {
       // .
       tokens.removeToken();
       // name
       tokens.removeToken();
     }
   }
-}
+} exports.default = elideImportEquals;

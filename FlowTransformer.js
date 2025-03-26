@@ -1,10 +1,10 @@
-import {ContextualKeyword} from "../parser/tokenizer/keywords";
-import {TokenType as tt} from "../parser/tokenizer/types";
+"use strict";Object.defineProperty(exports, "__esModule", {value: true}); function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }var _keywords = require('../parser/tokenizer/keywords');
+var _types = require('../parser/tokenizer/types');
 
 
-import Transformer from "./Transformer";
+var _Transformer = require('./Transformer'); var _Transformer2 = _interopRequireDefault(_Transformer);
 
-export default class FlowTransformer extends Transformer {
+ class FlowTransformer extends _Transformer2.default {
   constructor(
      rootTransformer,
      tokens,
@@ -21,15 +21,15 @@ export default class FlowTransformer extends Transformer {
     ) {
       return true;
     }
-    if (this.tokens.matches1(tt._enum)) {
+    if (this.tokens.matches1(_types.TokenType._enum)) {
       this.processEnum();
       return true;
     }
-    if (this.tokens.matches2(tt._export, tt._enum)) {
+    if (this.tokens.matches2(_types.TokenType._export, _types.TokenType._enum)) {
       this.processNamedExportEnum();
       return true;
     }
-    if (this.tokens.matches3(tt._export, tt._default, tt._enum)) {
+    if (this.tokens.matches3(_types.TokenType._export, _types.TokenType._default, _types.TokenType._enum)) {
       this.processDefaultExportEnum();
       return true;
     }
@@ -127,28 +127,28 @@ export default class FlowTransformer extends Transformer {
   processEnum() {
     // enum E -> const E
     this.tokens.replaceToken("const");
-    this.tokens.copyExpectedToken(tt.name);
+    this.tokens.copyExpectedToken(_types.TokenType.name);
 
     let isSymbolEnum = false;
-    if (this.tokens.matchesContextual(ContextualKeyword._of)) {
+    if (this.tokens.matchesContextual(_keywords.ContextualKeyword._of)) {
       this.tokens.removeToken();
-      isSymbolEnum = this.tokens.matchesContextual(ContextualKeyword._symbol);
+      isSymbolEnum = this.tokens.matchesContextual(_keywords.ContextualKeyword._symbol);
       this.tokens.removeToken();
     }
-    const hasInitializers = this.tokens.matches3(tt.braceL, tt.name, tt.eq);
+    const hasInitializers = this.tokens.matches3(_types.TokenType.braceL, _types.TokenType.name, _types.TokenType.eq);
     this.tokens.appendCode(' = require("flow-enums-runtime")');
 
     const isMirrored = !isSymbolEnum && !hasInitializers;
     this.tokens.replaceTokenTrimmingLeftWhitespace(isMirrored ? ".Mirrored([" : "({");
 
-    while (!this.tokens.matches1(tt.braceR)) {
+    while (!this.tokens.matches1(_types.TokenType.braceR)) {
       // ... is allowed at the end and has no runtime behavior.
-      if (this.tokens.matches1(tt.ellipsis)) {
+      if (this.tokens.matches1(_types.TokenType.ellipsis)) {
         this.tokens.removeToken();
         break;
       }
       this.processEnumElement(isSymbolEnum, hasInitializers);
-      if (this.tokens.matches1(tt.comma)) {
+      if (this.tokens.matches1(_types.TokenType.comma)) {
         this.tokens.copyToken();
       }
     }
@@ -179,4 +179,4 @@ export default class FlowTransformer extends Transformer {
       this.tokens.replaceToken(`"${this.tokens.identifierName()}"`);
     }
   }
-}
+} exports.default = FlowTransformer;

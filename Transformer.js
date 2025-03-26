@@ -1,4 +1,4 @@
-export default  class Transformer {
+"use strict";Object.defineProperty(exports, "__esModule", {value: true}); class Transformer {
   // Return true if anything was processed, false otherwise.
   
 
@@ -13,4 +13,4 @@ export default  class Transformer {
   getSuffixCode() {
     return "";
   }
-}
+} exports.default = Transformer;

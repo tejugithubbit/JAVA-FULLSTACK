@@ -1,5 +1,5 @@
-import {isTopLevelDeclaration} from "../parser/tokenizer";
-import {TokenType as tt} from "../parser/tokenizer/types";
+"use strict";Object.defineProperty(exports, "__esModule", {value: true});var _tokenizer = require('../parser/tokenizer');
+var _types = require('../parser/tokenizer/types');
 
 
 
@@ -7,10 +7,10 @@ import {TokenType as tt} from "../parser/tokenizer/types";
 
 
 
-export const EMPTY_DECLARATION_INFO = {
+ const EMPTY_DECLARATION_INFO = {
   typeDeclarations: new Set(),
   valueDeclarations: new Set(),
-};
+}; exports.EMPTY_DECLARATION_INFO = EMPTY_DECLARATION_INFO;
 
 /**
  * Get all top-level identifiers that should be preserved when exported in TypeScript.
@@ -23,12 +23,12 @@ export const EMPTY_DECLARATION_INFO = {
  * - Imported identifiers should be preserved since we don't have enough information to
  *   rule them out. --isolatedModules disallows re-exports, which catches errors here.
  */
-export default function getDeclarationInfo(tokens) {
+ function getDeclarationInfo(tokens) {
   const typeDeclarations = new Set();
   const valueDeclarations = new Set();
   for (let i = 0; i < tokens.tokens.length; i++) {
     const token = tokens.tokens[i];
-    if (token.type === tt.name && isTopLevelDeclaration(token)) {
+    if (token.type === _types.TokenType.name && _tokenizer.isTopLevelDeclaration.call(void 0, token)) {
       if (token.isType) {
         typeDeclarations.add(tokens.identifierNameForToken(token));
       } else {
@@ -37,4 +37,4 @@ export default function getDeclarationInfo(tokens) {
     }
   }
   return {typeDeclarations, valueDeclarations};
-}
+} exports.default = getDeclarationInfo;

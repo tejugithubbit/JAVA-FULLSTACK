@@ -1,12 +1,12 @@
+"use strict";Object.defineProperty(exports, "__esModule", {value: true}); function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 
+var _tokenizer = require('./parser/tokenizer');
+var _keywords = require('./parser/tokenizer/keywords');
+var _types = require('./parser/tokenizer/types');
 
-import {isDeclaration} from "./parser/tokenizer";
-import {ContextualKeyword} from "./parser/tokenizer/keywords";
-import {TokenType as tt} from "./parser/tokenizer/types";
-
-import getImportExportSpecifierInfo from "./util/getImportExportSpecifierInfo";
-import {getNonTypeIdentifiers} from "./util/getNonTypeIdentifiers";
+var _getImportExportSpecifierInfo = require('./util/getImportExportSpecifierInfo'); var _getImportExportSpecifierInfo2 = _interopRequireDefault(_getImportExportSpecifierInfo);
+var _getNonTypeIdentifiers = require('./util/getNonTypeIdentifiers');
 
 
 
@@ -30,7 +30,7 @@ import {getNonTypeIdentifiers} from "./util/getNonTypeIdentifiers";
  * TypeScript uses a simpler mechanism that does not use functions like interopRequireDefault and
  * interopRequireWildcard, so we also allow that mode for compatibility.
  */
-export default class CJSImportProcessor {
+ class CJSImportProcessor {
    __init() {this.nonTypeIdentifiers = new Set()}
    __init2() {this.importInfoByPath = new Map()}
    __init3() {this.importsToReplace = new Map()}
@@ -50,14 +50,14 @@ export default class CJSImportProcessor {
   preprocessTokens() {
     for (let i = 0; i < this.tokens.tokens.length; i++) {
       if (
-        this.tokens.matches1AtIndex(i, tt._import) &&
-        !this.tokens.matches3AtIndex(i, tt._import, tt.name, tt.eq)
+        this.tokens.matches1AtIndex(i, _types.TokenType._import) &&
+        !this.tokens.matches3AtIndex(i, _types.TokenType._import, _types.TokenType.name, _types.TokenType.eq)
       ) {
         this.preprocessImportAtIndex(i);
       }
       if (
-        this.tokens.matches1AtIndex(i, tt._export) &&
-        !this.tokens.matches2AtIndex(i, tt._export, tt.eq)
+        this.tokens.matches1AtIndex(i, _types.TokenType._export) &&
+        !this.tokens.matches2AtIndex(i, _types.TokenType._export, _types.TokenType.eq)
       ) {
         this.preprocessExportAtIndex(i);
       }
@@ -70,7 +70,7 @@ export default class CJSImportProcessor {
    * This includes `import {} from 'foo';`, but not `import 'foo';`.
    */
   pruneTypeOnlyImports() {
-    this.nonTypeIdentifiers = getNonTypeIdentifiers(this.tokens, this.options);
+    this.nonTypeIdentifiers = _getNonTypeIdentifiers.getNonTypeIdentifiers.call(void 0, this.tokens, this.options);
     for (const [path, importInfo] of this.importInfoByPath.entries()) {
       if (
         importInfo.hasBareImport ||
@@ -188,36 +188,36 @@ export default class CJSImportProcessor {
 
     index++;
     if (
-      (this.tokens.matchesContextualAtIndex(index, ContextualKeyword._type) ||
-        this.tokens.matches1AtIndex(index, tt._typeof)) &&
-      !this.tokens.matches1AtIndex(index + 1, tt.comma) &&
-      !this.tokens.matchesContextualAtIndex(index + 1, ContextualKeyword._from)
+      (this.tokens.matchesContextualAtIndex(index, _keywords.ContextualKeyword._type) ||
+        this.tokens.matches1AtIndex(index, _types.TokenType._typeof)) &&
+      !this.tokens.matches1AtIndex(index + 1, _types.TokenType.comma) &&
+      !this.tokens.matchesContextualAtIndex(index + 1, _keywords.ContextualKeyword._from)
     ) {
       // import type declaration, so no need to process anything.
       return;
     }
 
-    if (this.tokens.matches1AtIndex(index, tt.parenL)) {
+    if (this.tokens.matches1AtIndex(index, _types.TokenType.parenL)) {
       // Dynamic import, so nothing to do
       return;
     }
 
-    if (this.tokens.matches1AtIndex(index, tt.name)) {
+    if (this.tokens.matches1AtIndex(index, _types.TokenType.name)) {
       defaultNames.push(this.tokens.identifierNameAtIndex(index));
       index++;
-      if (this.tokens.matches1AtIndex(index, tt.comma)) {
+      if (this.tokens.matches1AtIndex(index, _types.TokenType.comma)) {
         index++;
       }
     }
 
-    if (this.tokens.matches1AtIndex(index, tt.star)) {
+    if (this.tokens.matches1AtIndex(index, _types.TokenType.star)) {
       // * as
       index += 2;
       wildcardNames.push(this.tokens.identifierNameAtIndex(index));
       index++;
     }
 
-    if (this.tokens.matches1AtIndex(index, tt.braceL)) {
+    if (this.tokens.matches1AtIndex(index, _types.TokenType.braceL)) {
       const result = this.getNamedImports(index + 1);
       index = result.newIndex;
 
@@ -231,11 +231,11 @@ export default class CJSImportProcessor {
       }
     }
 
-    if (this.tokens.matchesContextualAtIndex(index, ContextualKeyword._from)) {
+    if (this.tokens.matchesContextualAtIndex(index, _keywords.ContextualKeyword._from)) {
       index++;
     }
 
-    if (!this.tokens.matches1AtIndex(index, tt.string)) {
+    if (!this.tokens.matches1AtIndex(index, _types.TokenType.string)) {
       throw new Error("Expected string token at the end of import statement.");
     }
     const path = this.tokens.stringValueAtIndex(index);
@@ -250,23 +250,23 @@ export default class CJSImportProcessor {
 
    preprocessExportAtIndex(index) {
     if (
-      this.tokens.matches2AtIndex(index, tt._export, tt._var) ||
-      this.tokens.matches2AtIndex(index, tt._export, tt._let) ||
-      this.tokens.matches2AtIndex(index, tt._export, tt._const)
+      this.tokens.matches2AtIndex(index, _types.TokenType._export, _types.TokenType._var) ||
+      this.tokens.matches2AtIndex(index, _types.TokenType._export, _types.TokenType._let) ||
+      this.tokens.matches2AtIndex(index, _types.TokenType._export, _types.TokenType._const)
     ) {
       this.preprocessVarExportAtIndex(index);
     } else if (
-      this.tokens.matches2AtIndex(index, tt._export, tt._function) ||
-      this.tokens.matches2AtIndex(index, tt._export, tt._class)
+      this.tokens.matches2AtIndex(index, _types.TokenType._export, _types.TokenType._function) ||
+      this.tokens.matches2AtIndex(index, _types.TokenType._export, _types.TokenType._class)
     ) {
       const exportName = this.tokens.identifierNameAtIndex(index + 2);
       this.addExportBinding(exportName, exportName);
-    } else if (this.tokens.matches3AtIndex(index, tt._export, tt.name, tt._function)) {
+    } else if (this.tokens.matches3AtIndex(index, _types.TokenType._export, _types.TokenType.name, _types.TokenType._function)) {
       const exportName = this.tokens.identifierNameAtIndex(index + 3);
       this.addExportBinding(exportName, exportName);
-    } else if (this.tokens.matches2AtIndex(index, tt._export, tt.braceL)) {
+    } else if (this.tokens.matches2AtIndex(index, _types.TokenType._export, _types.TokenType.braceL)) {
       this.preprocessNamedExportAtIndex(index);
-    } else if (this.tokens.matches2AtIndex(index, tt._export, tt.star)) {
+    } else if (this.tokens.matches2AtIndex(index, _types.TokenType._export, _types.TokenType.star)) {
       this.preprocessExportStarAtIndex(index);
     }
   }
@@ -276,19 +276,19 @@ export default class CJSImportProcessor {
     // Handle cases like `export let {x} = y;`, starting at the open-brace in that case.
     for (let i = index + 2; ; i++) {
       if (
-        this.tokens.matches1AtIndex(i, tt.braceL) ||
-        this.tokens.matches1AtIndex(i, tt.dollarBraceL) ||
-        this.tokens.matches1AtIndex(i, tt.bracketL)
+        this.tokens.matches1AtIndex(i, _types.TokenType.braceL) ||
+        this.tokens.matches1AtIndex(i, _types.TokenType.dollarBraceL) ||
+        this.tokens.matches1AtIndex(i, _types.TokenType.bracketL)
       ) {
         depth++;
       } else if (
-        this.tokens.matches1AtIndex(i, tt.braceR) ||
-        this.tokens.matches1AtIndex(i, tt.bracketR)
+        this.tokens.matches1AtIndex(i, _types.TokenType.braceR) ||
+        this.tokens.matches1AtIndex(i, _types.TokenType.bracketR)
       ) {
         depth--;
-      } else if (depth === 0 && !this.tokens.matches1AtIndex(i, tt.name)) {
+      } else if (depth === 0 && !this.tokens.matches1AtIndex(i, _types.TokenType.name)) {
         break;
-      } else if (this.tokens.matches1AtIndex(1, tt.eq)) {
+      } else if (this.tokens.matches1AtIndex(1, _types.TokenType.eq)) {
         const endIndex = this.tokens.currentToken().rhsEndIndex;
         if (endIndex == null) {
           throw new Error("Expected = token with an end index.");
@@ -296,7 +296,7 @@ export default class CJSImportProcessor {
         i = endIndex - 1;
       } else {
         const token = this.tokens.tokens[i];
-        if (isDeclaration(token)) {
+        if (_tokenizer.isDeclaration.call(void 0, token)) {
           const exportName = this.tokens.identifierNameAtIndex(i);
           this.identifierReplacements.set(exportName, `exports.${exportName}`);
         }
@@ -315,7 +315,7 @@ export default class CJSImportProcessor {
     const {newIndex, namedImports} = this.getNamedImports(index);
     index = newIndex;
 
-    if (this.tokens.matchesContextualAtIndex(index, ContextualKeyword._from)) {
+    if (this.tokens.matchesContextualAtIndex(index, _keywords.ContextualKeyword._from)) {
       index++;
     } else {
       // Reinterpret "a as b" to be local/exported rather than imported/local.
@@ -325,7 +325,7 @@ export default class CJSImportProcessor {
       return;
     }
 
-    if (!this.tokens.matches1AtIndex(index, tt.string)) {
+    if (!this.tokens.matches1AtIndex(index, _types.TokenType.string)) {
       throw new Error("Expected string token at the end of import statement.");
     }
     const path = this.tokens.stringValueAtIndex(index);
@@ -335,7 +335,7 @@ export default class CJSImportProcessor {
 
    preprocessExportStarAtIndex(index) {
     let exportedName = null;
-    if (this.tokens.matches3AtIndex(index, tt._export, tt.star, tt._as)) {
+    if (this.tokens.matches3AtIndex(index, _types.TokenType._export, _types.TokenType.star, _types.TokenType._as)) {
       // export * as
       index += 3;
       exportedName = this.tokens.identifierNameAtIndex(index);
@@ -345,7 +345,7 @@ export default class CJSImportProcessor {
       // export * from
       index += 3;
     }
-    if (!this.tokens.matches1AtIndex(index, tt.string)) {
+    if (!this.tokens.matches1AtIndex(index, _types.TokenType.string)) {
       throw new Error("Expected string token at the end of star export statement.");
     }
     const path = this.tokens.stringValueAtIndex(index);
@@ -360,12 +360,12 @@ export default class CJSImportProcessor {
    getNamedImports(index) {
     const namedImports = [];
     while (true) {
-      if (this.tokens.matches1AtIndex(index, tt.braceR)) {
+      if (this.tokens.matches1AtIndex(index, _types.TokenType.braceR)) {
         index++;
         break;
       }
 
-      const specifierInfo = getImportExportSpecifierInfo(this.tokens, index);
+      const specifierInfo = _getImportExportSpecifierInfo2.default.call(void 0, this.tokens, index);
       index = specifierInfo.endIndex;
       if (!specifierInfo.isType) {
         namedImports.push({
@@ -374,13 +374,13 @@ export default class CJSImportProcessor {
         });
       }
 
-      if (this.tokens.matches2AtIndex(index, tt.comma, tt.braceR)) {
+      if (this.tokens.matches2AtIndex(index, _types.TokenType.comma, _types.TokenType.braceR)) {
         index += 2;
         break;
-      } else if (this.tokens.matches1AtIndex(index, tt.braceR)) {
+      } else if (this.tokens.matches1AtIndex(index, _types.TokenType.braceR)) {
         index++;
         break;
-      } else if (this.tokens.matches1AtIndex(index, tt.comma)) {
+      } else if (this.tokens.matches1AtIndex(index, _types.TokenType.comma)) {
         index++;
       } else {
         throw new Error(`Unexpected token: ${JSON.stringify(this.tokens.tokens[index])}`);
@@ -453,4 +453,4 @@ export default class CJSImportProcessor {
       ...this.exportBindingsByLocalName.keys(),
     ]);
   }
-}
+} exports.default = CJSImportProcessor;

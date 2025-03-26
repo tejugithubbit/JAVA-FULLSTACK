@@ -1,14 +1,14 @@
-import {TokenType as tt} from "../parser/tokenizer/types";
+"use strict";Object.defineProperty(exports, "__esModule", {value: true}); function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }var _types = require('../parser/tokenizer/types');
 
-import Transformer from "./Transformer";
+var _Transformer = require('./Transformer'); var _Transformer2 = _interopRequireDefault(_Transformer);
 
-export default class NumericSeparatorTransformer extends Transformer {
+ class NumericSeparatorTransformer extends _Transformer2.default {
   constructor( tokens) {
     super();this.tokens = tokens;;
   }
 
   process() {
-    if (this.tokens.matches1(tt.num)) {
+    if (this.tokens.matches1(_types.TokenType.num)) {
       const code = this.tokens.currentTokenCode();
       if (code.includes("_")) {
         this.tokens.replaceToken(code.replace(/_/g, ""));
@@ -17,4 +17,4 @@ export default class NumericSeparatorTransformer extends Transformer {
     }
     return false;
   }
-}
+} exports.default = NumericSeparatorTransformer;
