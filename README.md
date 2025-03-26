@@ -1,143 +1,126 @@
-# @isaacs/cliui
+# @nodelib/fs.stat
 
-Temporary fork of [cliui](http://npm.im/cliui).
+> Get the status of a file with some features.
 
-![ci](https://github.com/yargs/cliui/workflows/ci/badge.svg)
-[![NPM version](https://img.shields.io/npm/v/cliui.svg)](https://www.npmjs.com/package/cliui)
-[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
-![nycrc config on GitHub](https://img.shields.io/nycrc/yargs/cliui)
+## :bulb: Highlights
 
-easily create complex multi-column command-line-interfaces.
+Wrapper around standard method `fs.lstat` and `fs.stat` with some features.
 
-## Example
+* :beginner: Normally follows symbolic link.
+* :gear: Can safely work with broken symbolic link.
 
-```js
-const ui = require('cliui')()
+## Install
 
-ui.div('Usage: $0 [command] [options]')
-
-ui.div({
-  text: 'Options:',
-  padding: [2, 0, 1, 0]
-})
-
-ui.div(
-  {
-    text: "-f, --file",
-    width: 20,
-    padding: [0, 4, 0, 4]
-  },
-  {
-    text: "the file to load." +
-      chalk.green("(if this description is long it wraps).")
-    ,
-    width: 20
-  },
-  {
-    text: chalk.red("[required]"),
-    align: 'right'
-  }
-)
-
-console.log(ui.toString())
+```console
+npm install @nodelib/fs.stat
 ```
 
-## Deno/ESM Support
+## Usage
 
-As of `v7` `cliui` supports [Deno](https://github.com/denoland/deno) and
-[ESM](https://nodejs.org/api/esm.html#esm_ecmascript_modules):
+```ts
+import * as fsStat from '@nodelib/fs.stat';
 
-```typescript
-import cliui from "https://deno.land/x/cliui/deno.ts";
-
-const ui = cliui({})
-
-ui.div('Usage: $0 [command] [options]')
-
-ui.div({
-  text: 'Options:',
-  padding: [2, 0, 1, 0]
-})
-
-ui.div({
-  text: "-f, --file",
-  width: 20,
-  padding: [0, 4, 0, 4]
-})
-
-console.log(ui.toString())
+fsStat.stat('path', (error, stats) => { /* … */ });
 ```
 
-<img width="500" src="screenshot.png">
+## API
 
-## Layout DSL
+### .stat(path, [optionsOrSettings], callback)
 
-cliui exposes a simple layout DSL:
+Returns an instance of `fs.Stats` class for provided path with standard callback-style.
 
-If you create a single `ui.div`, passing a string rather than an
-object:
-
-* `\n`: characters will be interpreted as new rows.
-* `\t`: characters will be interpreted as new columns.
-* `\s`: characters will be interpreted as padding.
-
-**as an example...**
-
-```js
-var ui = require('./')({
-  width: 60
-})
-
-ui.div(
-  'Usage: node ./bin/foo.js\n' +
-  '  <regex>\t  provide a regex\n' +
-  '  <glob>\t  provide a glob\t [required]'
-)
-
-console.log(ui.toString())
+```ts
+fsStat.stat('path', (error, stats) => { /* … */ });
+fsStat.stat('path', {}, (error, stats) => { /* … */ });
+fsStat.stat('path', new fsStat.Settings(), (error, stats) => { /* … */ });
 ```
 
-**will output:**
+### .statSync(path, [optionsOrSettings])
 
-```shell
-Usage: node ./bin/foo.js
-  <regex>  provide a regex
-  <glob>   provide a glob          [required]
+Returns an instance of `fs.Stats` class for provided path.
+
+```ts
+const stats = fsStat.stat('path');
+const stats = fsStat.stat('path', {});
+const stats = fsStat.stat('path', new fsStat.Settings());
 ```
 
-## Methods
+#### path
 
-```js
-cliui = require('cliui')
+* Required: `true`
+* Type: `string | Buffer | URL`
+
+A path to a file. If a URL is provided, it must use the `file:` protocol.
+
+#### optionsOrSettings
+
+* Required: `false`
+* Type: `Options | Settings`
+* Default: An instance of `Settings` class
+
+An [`Options`](#options) object or an instance of [`Settings`](#settings) class.
+
+> :book: When you pass a plain object, an instance of the `Settings` class will be created automatically. If you plan to call the method frequently, use a pre-created instance of the `Settings` class.
+
+### Settings([options])
+
+A class of full settings of the package.
+
+```ts
+const settings = new fsStat.Settings({ followSymbolicLink: false });
+
+const stats = fsStat.stat('path', settings);
 ```
 
-### cliui({width: integer})
+## Options
 
-Specify the maximum width of the UI being generated.
-If no width is provided, cliui will try to get the current window's width and use it, and if that doesn't work, width will be set to `80`.
+### `followSymbolicLink`
 
-### cliui({wrap: boolean})
+* Type: `boolean`
+* Default: `true`
 
-Enable or disable the wrapping of text in a column.
+Follow symbolic link or not. Call `fs.stat` on symbolic link if `true`.
 
-### cliui.div(column, column, column)
+### `markSymbolicLink`
 
-Create a row with any number of columns, a column
-can either be a string, or an object with the following
-options:
+* Type: `boolean`
+* Default: `false`
 
-* **text:** some text to place in the column.
-* **width:** the width of a column.
-* **align:** alignment, `right` or `center`.
-* **padding:** `[top, right, bottom, left]`.
-* **border:** should a border be placed around the div?
+Mark symbolic link by setting the return value of `isSymbolicLink` function to always `true` (even after `fs.stat`).
 
-### cliui.span(column, column, column)
+> :book: Can be used if you want to know what is hidden behind a symbolic link, but still continue to know that it is a symbolic link.
 
-Similar to `div`, except the next row will be appended without
-a new line being created.
+### `throwErrorOnBrokenSymbolicLink`
 
-### cliui.resetOutput()
+* Type: `boolean`
+* Default: `true`
 
-Resets the UI elements of the current cliui instance, maintaining the values
-set for `width` and `wrap`.
+Throw an error when symbolic link is broken if `true` or safely return `lstat` call if `false`.
+
+### `fs`
+
+* Type: [`FileSystemAdapter`](./src/adapters/fs.ts)
+* Default: A default FS methods
+
+By default, the built-in Node.js module (`fs`) is used to work with the file system. You can replace any method with your own.
+
+```ts
+interface FileSystemAdapter {
+	lstat?: typeof fs.lstat;
+	stat?: typeof fs.stat;
+	lstatSync?: typeof fs.lstatSync;
+	statSync?: typeof fs.statSync;
+}
+
+const settings = new fsStat.Settings({
+	fs: { lstat: fakeLstat }
+});
+```
+
+## Changelog
+
+See the [Releases section of our GitHub project](https://github.com/nodelib/nodelib/releases) for changelog for each release version.
+
+## License
+
+This software is released under the terms of the MIT license.
