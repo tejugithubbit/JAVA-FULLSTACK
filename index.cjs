@@ -1,4 +1,5 @@
 'use strict';
+
 const align = {
     right: alignRight,
     center: alignCenter
@@ -7,7 +8,7 @@ const top = 0;
 const right = 1;
 const bottom = 2;
 const left = 3;
-export class UI {
+class UI {
     constructor(opts) {
         var _a;
         this.width = opts.width;
@@ -291,7 +292,7 @@ function alignCenter(str, width) {
     return ' '.repeat((width - strWidth) >> 1) + str;
 }
 let mixin;
-export function cliui(opts, _mixin) {
+function cliui(opts, _mixin) {
     mixin = _mixin;
     return new UI({
         /* c8 ignore start */
@@ -300,3 +301,17 @@ export function cliui(opts, _mixin) {
         /* c8 ignore stop */
     });
 }
+
+// Bootstrap cliui with CommonJS dependencies:
+const stringWidth = require('string-width-cjs');
+const stripAnsi = require('strip-ansi-cjs');
+const wrap = require('wrap-ansi-cjs');
+function ui(opts) {
+    return cliui(opts, {
+        stringWidth,
+        stripAnsi,
+        wrap
+    });
+}
+
+module.exports = ui;
